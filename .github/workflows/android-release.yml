@@ -62,10 +62,8 @@ jobs:
             $RUNNER_TEMP/app-aligned.apk
           echo "signed_apk=$RUNNER_TEMP/app-release-signed.apk" >> $GITHUB_OUTPUT
 
-      - name: Create Release and Upload APK
-        uses: softprops/action-gh-release@v2
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: ${{ steps.sign_apk.outputs.signed_apk }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: app-release-signed
+          path: ${{ steps.sign_apk.outputs.signed_apk }}
