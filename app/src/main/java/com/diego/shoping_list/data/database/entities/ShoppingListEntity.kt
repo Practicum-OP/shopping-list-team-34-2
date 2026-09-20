@@ -9,8 +9,7 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["nameList"], unique = true)]
 )
 data class ShoppingListEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val nameList: String,
     val iconKey: String
 )
