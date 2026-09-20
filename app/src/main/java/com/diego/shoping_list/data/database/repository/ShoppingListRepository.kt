@@ -4,9 +4,6 @@ import com.diego.shoping_list.data.database.entities.ShoppingListEntity
 import kotlinx.coroutines.flow.Flow
 
 interface ShoppingListRepository {
-
-    fun observeAll(): Flow<List<ShoppingListEntity>>
-
     fun searchByName(query: String): Flow<List<ShoppingListEntity>>
 
     suspend fun addList(name: String, iconKey: String): Result<Long>

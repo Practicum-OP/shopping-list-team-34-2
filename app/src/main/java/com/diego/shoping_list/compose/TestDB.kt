@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -46,15 +47,17 @@ fun TestDbScreen(
     repository: ShoppingListRepository = koinInject()
 ) {
     val scope = rememberCoroutineScope()
-    val focusManager = LocalFocusManager.current
+    val focusManagerAddList = LocalFocusManager.current
 
     var lists by remember { mutableStateOf<List<ShoppingListEntity>>(emptyList()) }
     var nameInput by remember { mutableStateOf("") }
-    var errorMsg by remember { mutableStateOf<String?>(null) }
+    var nameSearch by remember { mutableStateOf("") }
+    var errorMsgAddList by remember { mutableStateOf<String?>(null) }
+    var errorMsgSearch by remember { mutableStateOf<String?>(null) }
     var selectedIcon by remember { mutableStateOf(ListIcon.default) }
 
-    LaunchedEffect(Unit) {
-        repository.observeAll().collectLatest { lists = it }
+    LaunchedEffect(nameSearch) {
+        repository.searchByName(nameSearch).collectLatest { lists = it }
     }
 
     Column(
@@ -66,22 +69,22 @@ fun TestDbScreen(
             value = nameInput,
             onValueChange = {
                 nameInput = it
-                errorMsg = null                 // ← сбрасываем ошибку при вводе
+                errorMsgAddList = null                 // ← сбрасываем ошибку при вводе
             },
             label = { Text("Название списка") },
-            isError = errorMsg != null,
+            isError = errorMsgAddList != null,
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
-                onDone = { focusManager.clearFocus() }
+                onDone = { focusManagerAddList.clearFocus() }
             ),
             modifier = Modifier.fillMaxWidth()
         )
 
         // === Ошибка под полем ===
-        errorMsg?.let {
+        errorMsgAddList?.let {
             Text(
                 text = "⚠ $it",
                 color = MaterialTheme.colorScheme.error,
@@ -106,11 +109,11 @@ fun TestDbScreen(
 
         Button(
             onClick = {
-                focusManager.clearFocus()
+                focusManagerAddList.clearFocus()
                 scope.launch {
                     repository.addList(nameInput, selectedIcon.key)
-                        .onSuccess { errorMsg = null }
-                        .onFailure { errorMsg = it.message ?: "Ошибка" }
+                        .onSuccess { errorMsgAddList = null }
+                        .onFailure { errorMsgAddList = it.message ?: "Ошибка" }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -118,41 +121,141 @@ fun TestDbScreen(
             Text("Добавить список (icon = ${selectedIcon.key})")
         }
 
-        errorMsg?.let {
+        errorMsgAddList?.let {
             Text("⚠ $it", modifier = Modifier.padding(vertical = 8.dp))
         }
 
         Text("Всего списков: ${lists.size}", modifier = Modifier.padding(vertical = 8.dp))
 
-        // ← LazyColumn занимает остаток высоты
+        // Это поиск по имени
+        OutlinedTextField(
+            value = nameSearch,
+            onValueChange = {
+                nameSearch = it
+                errorMsgSearch = null                 // ← сбрасываем ошибку при вводе
+            },
+            label = { Text("Название списка") },
+            isError = errorMsgSearch != null,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManagerAddList.clearFocus() }
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Список наших листов, подписываемся в самом начале, затем ели надо ищем по имени
         LazyColumn(modifier = Modifier.weight(1f)) {
-            items(lists, key = { it.id }) { list ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Row(
+            if (nameSearch.isEmpty()) {
+                items(lists, key = { it.id }) { list ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 4.dp)
                     ) {
-                        val icon = ListIcon.fromKey(list.iconKey)
-                        Image(
-                            painter = painterResource(icon.resId),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp)
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text("id = ${list.id}")
-                            Text("name = ${list.nameList}")
-                            Text("icon = ${list.iconKey}")
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // === ЛЕВАЯ ЧАСТЬ: иконка + текст (занимает всё свободное место) ===
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val icon = ListIcon.fromKey(list.iconKey)
+                                Image(
+                                    painter = painterResource(icon.resId),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(40.dp)
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = list.nameList,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                    Text(
+                                        text = "id = ${list.id} | icon = ${list.iconKey}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            //  ПРАВАЯ ЧАСТЬ: кнопки
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        repository.updateList(
+                                            ShoppingListEntity(
+                                                id = list.id,
+                                                nameList = "${list.nameList}(edit)",
+                                                iconKey = list.iconKey
+                                            )
+                                        )
+                                    }
+                                }
+                            ) {
+                                Text("edit")
+                            }
+
+                            IconButton(onClick = {
+                                    scope.launch {
+                                        repository.addList(
+                                            name = "${list.nameList}(copy)",
+                                            iconKey = list.iconKey
+                                        )
+                                    }
+                                }
+                            ) {
+                                Text("copy")
+                            }
+
+                            IconButton(onClick = {
+                                scope.launch {
+                                    repository.deleteList(list)
+                                    }
+                                }
+                            ) {
+                                Text("del")
+                            }
+                        }
+                    }
+                }
+            } else {
+                items(lists, key = { it.id }) { list ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val icon = ListIcon.fromKey(list.iconKey)
+                            Image(
+                                painter = painterResource(icon.resId),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text("id = ${list.id}")
+                                Text("name = ${list.nameList}")
+                                Text("icon = ${list.iconKey}")
+                            }
                         }
                     }
                 }
             }
+
         }
     }
 }

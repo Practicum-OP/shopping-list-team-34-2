@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.Flow
 class ShoppingListRepositoryImpl(
     private val dao: ShoppingListDao
 ) : ShoppingListRepository {
-    override fun observeAll(): Flow<List<ShoppingListEntity>> = dao.observeAll()
-
     override fun searchByName(query: String): Flow<List<ShoppingListEntity>> {
         return if (query.isBlank()){
             dao.observeAll()
