@@ -15,7 +15,8 @@ import com.diego.shoping_list.data.database.entities.ShoppingListEntity
         ShoppingListEntity::class,
         ProductInListEntity::class,
         ProductNameEntity::class
-    ]
+    ],
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun shoppingListDao(): ShoppingListDao

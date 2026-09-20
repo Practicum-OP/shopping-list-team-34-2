@@ -18,19 +18,20 @@ class ShoppingListRepositoryImpl(
     }
 
     override suspend fun addList(name: String, iconKey: String): Result<Long> {
-        val trimmed = name.trim().lowercase()
+        val trimmed = name.trim()
+        val lower = trimmed.lowercase()
 
         if (trimmed.isEmpty()) {
             return Result.failure(IllegalArgumentException("Название не может быть пустым"))
         }
 
-        if (dao.existsByName(name)) {
+        if (dao.existsByName(lower)) {
             return Result.failure(IllegalStateException("Список с таким именем уже есть"))
         }
 
         return try {
             val id = dao.insert(
-                ShoppingListEntity(nameList = trimmed, iconKey = iconKey)
+                ShoppingListEntity(nameList = lower, iconKey = iconKey)
             )
             Result.success(id)
         } catch (e: Exception) {

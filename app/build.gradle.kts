@@ -45,7 +45,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
 
 //    di
-    implementation("io.insert-koin:koin-android:4.2.2")
+    implementation(libs.koin.android)
+
+    implementation(libs.koin.androidx.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
