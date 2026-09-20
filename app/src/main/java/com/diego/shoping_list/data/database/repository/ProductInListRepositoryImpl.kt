@@ -15,6 +15,10 @@ class ProductInListRepositoryImpl(
     override fun observeByList(listId: Long): Flow<List<ProductInListEntity>> =
         productDao.observeByList(listId)
 
+    override fun observeAllProduct(): Flow<List<ProductInListEntity>> {
+        return productDao.observeAllProducts()
+    }
+
     override suspend fun addProduct(
         listId: Long,
         name: String,

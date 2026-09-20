@@ -17,6 +17,9 @@ interface ProductInListDao {
     """)
     fun observeByList(listId: Long): Flow<List<ProductInListEntity>>
 
+    @Query("SELECT * FROM product_in_list_table")
+    fun observeAllProducts(): Flow<List<ProductInListEntity>>
+
     @Insert
     suspend fun insert(product: ProductInListEntity): Long
 

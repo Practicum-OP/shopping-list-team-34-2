@@ -1,11 +1,13 @@
 package com.diego.shoping_list.data.database.repository
 
+import com.diego.shoping_list.data.database.dao.ProductInListDao
 import com.diego.shoping_list.data.database.dao.ShoppingListDao
 import com.diego.shoping_list.data.database.entities.ShoppingListEntity
 import kotlinx.coroutines.flow.Flow
 
 class ShoppingListRepositoryImpl(
-    private val dao: ShoppingListDao
+    private val dao: ShoppingListDao,
+    private val productInListDao: ProductInListDao
 ) : ShoppingListRepository {
     override fun searchByName(query: String): Flow<List<ShoppingListEntity>> {
         return if (query.isBlank()){
@@ -49,6 +51,7 @@ class ShoppingListRepositoryImpl(
     override suspend fun deleteList(list: ShoppingListEntity): Result<Unit> {
         return try {
             dao.delete(list)
+            productInListDao.deleteByList(list.id)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
