@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -21,17 +22,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.diego.shoping_list.R
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StartScreen(
-    onFinished: () -> Unit
+    onFinished: () -> Unit,
+    viewModel: StartScreenViewModel = koinViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        delay(2_000L.milliseconds)
-        onFinished()
+    val isReady by viewModel.isReady.collectAsStateWithLifecycle()
+    LaunchedEffect(isReady) {
+        if (isReady) onFinished()
     }
 
     Surface(
