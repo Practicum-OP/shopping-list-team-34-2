@@ -13,6 +13,7 @@ fun MainScreen(
     onSearchClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
     onToggleTheme: () -> Unit = {},
+    onShoppingListClick: (Long) -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
