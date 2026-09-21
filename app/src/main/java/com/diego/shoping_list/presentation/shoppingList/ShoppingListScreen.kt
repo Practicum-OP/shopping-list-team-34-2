@@ -9,22 +9,18 @@ import androidx.compose.ui.Modifier
 @Composable
 fun ShoppingListScreen(
     onShoppingListClick: (Long) -> Unit,
-    modifier: Modifier = Modifier,
-    onAddClick: () -> Unit = {},
-    onSearchClick: () -> Unit = {},
-    onDeleteClick: () -> Unit = {},
-    onToggleTheme: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ShoppingListTopBar(
-                onSearchClick = onSearchClick,
-                onDeleteClick = onDeleteClick,
-                onToggleTheme = onToggleTheme,
+                onSearchClick = {},
+                onDeleteClick = {},
+                onToggleTheme = {},
             )
         },
-        floatingActionButton = { ShoppingListFab(onClick = onAddClick) },
+        floatingActionButton = { ShoppingListFab(onClick = {}) },
     ) { innerPadding ->
         ShoppingListEmptyState(
             modifier = Modifier.padding(innerPadding)
