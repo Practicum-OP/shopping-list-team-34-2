@@ -2,9 +2,11 @@ package com.diego.shoping_list.presentation.start
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,15 +23,18 @@ import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun StartScreen(paddingValues: PaddingValues = PaddingValues.Zero,
-                onFinished: () -> Unit
-){    LaunchedEffect(Unit) {
-    delay(2_000L.milliseconds) // 2 секунды
-    onFinished()
-}
+fun StartScreen(
+    onFinished: () -> Unit
+) {
+    LaunchedEffect(Unit) {
+        delay(2_000L.milliseconds) // 2 секунды
+        onFinished()
+    }
     Column(
-        modifier = Modifier.fillMaxSize()
-            .padding(paddingValues),
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
@@ -50,7 +55,9 @@ fun StartScreen(paddingValues: PaddingValues = PaddingValues.Zero,
             lineHeight = 24.sp,
             letterSpacing = 0.15.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 48.dp).padding(horizontal = 44.dp)
+            modifier = Modifier
+                .padding(top = 48.dp)
+                .padding(horizontal = 44.dp)
         )
         Text(
             text = "Создавайте списки, добавляйте товары, отмечайте, что уже куплено",
@@ -60,7 +67,9 @@ fun StartScreen(paddingValues: PaddingValues = PaddingValues.Zero,
             lineHeight = 20.sp,
             letterSpacing = 0.25.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp).padding(horizontal = 44.dp)
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .padding(horizontal = 44.dp)
         )
     }
 }
