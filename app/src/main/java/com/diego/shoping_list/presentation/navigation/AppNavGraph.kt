@@ -6,9 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.diego.shoping_list.presentation.start.StartScreen
 import com.diego.shoping_list.presentation.products.ProductsScreen
-import com.diego.shoping_list.presentation.shoppingList.ShoppingListScreen
+import com.diego.shoping_list.presentation.start.StartScreen
+import com.diego.shoping_list.ui.main.MainScreen
 
 @Composable
 fun AppNavGraph() {
@@ -19,14 +19,14 @@ fun AppNavGraph() {
         composable(Screen.Start.route) {
             StartScreen(
                 onFinished = {
-                    navController.navigate(Screen.ShoppingList.route) {
+                    navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Start.route) { inclusive = true }
                     }
                 }
             )
         }
-        composable(Screen.ShoppingList.route) {
-            ShoppingListScreen( onShoppingListClick = { listId ->
+        composable(Screen.Main.route) {
+            MainScreen( onShoppingListClick = { listId ->
                 navController.navigate("products/${listId}")})
         }
         composable(
