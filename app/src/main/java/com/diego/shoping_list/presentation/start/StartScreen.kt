@@ -1,4 +1,4 @@
-package com.diego.shoping_list.presentation
+package com.diego.shoping_list.presentation.start
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
