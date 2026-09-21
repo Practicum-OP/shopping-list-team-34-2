@@ -1,4 +1,4 @@
-package com.diego.shoping_list.ui.main
+package com.diego.shoping_list.presentation.shoppingList
 
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -8,7 +8,7 @@ import androidx.compose.ui.res.stringResource
 import com.diego.shoping_list.R
 
 @Composable
-fun MainFab(onClick: () -> Unit) {
+fun ShoppingListFab(onClick: () -> Unit) {
     FloatingActionButton(onClick = onClick) {
         Icon(
             painter = painterResource(R.drawable.ic_fab_add),

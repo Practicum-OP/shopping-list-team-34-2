@@ -1,4 +1,4 @@
-package com.diego.shoping_list.ui.common
+package com.diego.shoping_list.presentation.common
 
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.Icon

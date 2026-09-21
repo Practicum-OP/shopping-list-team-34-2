@@ -1,4 +1,4 @@
-package com.diego.shoping_list.ui.main
+package com.diego.shoping_list.presentation.shoppingList
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -18,7 +18,7 @@ import com.diego.shoping_list.R
 import com.diego.shoping_list.ui.theme.Dimens
 
 @Composable
-fun MainEmptyState(modifier: Modifier = Modifier) {
+fun ShoppingListEmptyState(modifier: Modifier = Modifier) {
     val illustration = if (isSystemInDarkTheme()) {
         R.drawable.ic_empty_lists_dark
     } else {
@@ -36,14 +36,14 @@ fun MainEmptyState(modifier: Modifier = Modifier) {
             contentDescription = null,
         )
         Text(
-            text = stringResource(R.string.main_empty_title),
+            text = stringResource(R.string.shopping_list_empty_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = Dimens.spacingExtraLarge),
         )
         Text(
-            text = stringResource(R.string.main_empty_subtitle),
+            text = stringResource(R.string.shopping_list_empty_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
