@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,49 +30,56 @@ fun StartScreen(
     onFinished: () -> Unit
 ) {
     LaunchedEffect(Unit) {
-        delay(2_000L.milliseconds) // 2 секунды
+        delay(2_000L.milliseconds)
         onFinished()
     }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
+
+    Surface(
+        modifier = Modifier.fillMaxSize()
             .windowInsetsPadding(WindowInsets.systemBars)
             .padding(top = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+
     ) {
-        Image(
-            modifier = Modifier.padding(top = 16.dp),
-            painter = painterResource(id = R.drawable.ic_logo_shop_list),
-            contentDescription = null
-        )
-        Image(
-            modifier = Modifier.padding(top = 94.dp),
-            painter = painterResource(id = R.drawable.ic_illustration_start_screen),
-            contentDescription = null
-        )
-        Text(
-            text = "Добро пожаловать в Список покупок!",
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight(500),
-            fontSize = 16.sp,
-            lineHeight = 24.sp,
-            letterSpacing = 0.15.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(top = 48.dp)
-                .padding(horizontal = 44.dp)
-        )
-        Text(
-            text = "Создавайте списки, добавляйте товары, отмечайте, что уже куплено",
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight(400),
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-            letterSpacing = 0.25.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .padding(horizontal = 44.dp)
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                modifier = Modifier.padding(top = 16.dp),
+                painter = painterResource(id = R.drawable.ic_logo_shop_list),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+            Image(
+                modifier = Modifier.padding(top = 94.dp),
+                painter = painterResource(id = R.drawable.ic_illustration_start_screen),
+                contentDescription = null
+            )
+            Text(
+                text = "Добро пожаловать в Список покупок!",
+                fontFamily = FontFamily.Default,
+                fontWeight = FontWeight(500),
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+                letterSpacing = 0.15.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(top = 48.dp)
+                    .padding(horizontal = 44.dp),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "Создавайте списки, добавляйте товары, отмечайте, что уже куплено",
+                fontFamily = FontFamily.Default,
+                fontWeight = FontWeight(400),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                letterSpacing = 0.25.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 44.dp),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
     }
 }
