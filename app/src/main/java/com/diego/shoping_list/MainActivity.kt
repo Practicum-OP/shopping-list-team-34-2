@@ -7,10 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.diego.shoping_list.compose.TestDbProductScreen
+import com.diego.shoping_list.compose.TestDbScreen
 import com.diego.shoping_list.ui.theme.Shoping_listTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,29 +19,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             Shoping_listTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+//                    TestDbScreen(modifier = Modifier.padding(innerPadding))
+                    TestDbProductScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
     }
 }
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Shoping_listTheme {
-        Greeting("Android")
-    }
-}
-//test
