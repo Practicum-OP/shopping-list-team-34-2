@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Shoping_list</string>
+
+    <string name="action_back">Назад</string>
+    <string name="action_search">Поиск</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_toggle_theme">Сменить тему</string>
+    <string name="action_add_list">Создать список</string>
+
+    <string name="main_title">Мои списки</string>
+    <string name="main_empty_title">У вас пока нет списков</string>
+    <string name="main_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
 </resources>
