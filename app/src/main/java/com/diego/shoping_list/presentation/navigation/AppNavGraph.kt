@@ -6,9 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.diego.shoping_list.presentation.StartScreen
 import com.diego.shoping_list.presentation.products.ProductsScreen
 import com.diego.shoping_list.presentation.shoppingList.ShoppingListScreen
-import com.diego.shoping_list.presentation.start.StartScreen
 
 @Composable
 fun AppNavGraph() {
