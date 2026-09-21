@@ -7,7 +7,7 @@
     <string name="action_toggle_theme">Сменить тему</string>
     <string name="action_add_list">Создать список</string>
 
-    <string name="main_title">Мои списки</string>
-    <string name="main_empty_title">У вас пока нет списков</string>
-    <string name="main_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
+    <string name="shopping_list_title">Мои списки</string>
+    <string name="shopping_list_empty_title">У вас пока нет списков</string>
+    <string name="shopping_list_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
 </resources>
