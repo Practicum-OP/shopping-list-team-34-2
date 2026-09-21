@@ -15,21 +15,18 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun StartScreen(
-    onFinished: () -> Unit,
-    onTestDbClicked: () -> Unit
+    onFinished: () -> Unit
 ) {
-/*    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) {
         delay(2_000L.milliseconds) // 2 секунды
         onFinished()
-    }*/
+    }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column() {
-            Text(text = "НАЧАЛО", fontSize = 30.sp, modifier = Modifier.clickable(onClick = onFinished))
-            Text(text = "ТЕСТ БД", fontSize = 30.sp, modifier = Modifier.clickable(onClick = onTestDbClicked))
-
+            Text(text = "НАЧАЛО", fontSize = 30.sp)
         }
     }
 }

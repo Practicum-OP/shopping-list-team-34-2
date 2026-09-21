@@ -22,8 +22,7 @@ fun AppNavGraph() {
                     navController.navigate(Screen.ShoppingList.route) {
                         popUpTo(Screen.Start.route) { inclusive = true }
                     }
-                },
-                onTestDbClicked = { navController.navigate(Screen.TestDb.route) }
+                }
             )
         }
         composable(Screen.ShoppingList.route) {
@@ -39,9 +38,6 @@ fun AppNavGraph() {
                 listId = listId,
                 onBackClick = { navController.popBackStack() }
             )
-        }
-
-        composable(Screen.TestDb.route) {
         }
     }
 }
