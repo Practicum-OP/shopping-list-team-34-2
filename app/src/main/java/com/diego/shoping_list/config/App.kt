@@ -8,6 +8,7 @@ import com.diego.shoping_list.di.useCaseModule
 import com.diego.shoping_list.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import viewModelModule
 
 class App : Application() {
     override fun onCreate() {
