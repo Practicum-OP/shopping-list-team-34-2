@@ -10,4 +10,7 @@
     <string name="shopping_list_title">Мои списки</string>
     <string name="shopping_list_empty_title">У вас пока нет списков</string>
     <string name="shopping_list_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
+
+    <string name="product_screen_title">Продукты</string>
+    <string name="product_list_empty">В списке покупок пока пусто</string>
 </resources>
