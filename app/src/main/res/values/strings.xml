@@ -13,4 +13,9 @@
 
     <string name="product_screen_title">Продукты</string>
     <string name="product_list_empty">В списке покупок пока пусто</string>
+    <string name="shopping_title_dialog">Добавление списка</string>
+    <string name="shopping_edit_dialog">Название списка</string>
+    <string name="shopping_hint_dialog">Новый список</string>
+    <string name="cancel_dialog">Отмена</string>
+    <string name="create_dialog">Создать</string>
 </resources>
