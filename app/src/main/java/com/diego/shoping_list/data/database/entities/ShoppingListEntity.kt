@@ -10,6 +10,8 @@ import androidx.room.PrimaryKey
 )
 data class ShoppingListEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val nameList: String,
+    val nameList:
+
+    String,
     val iconKey: String
 )
