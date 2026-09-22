@@ -2,6 +2,7 @@ package com.diego.shoping_list.config
 
 import android.app.Application
 import com.diego.shoping_list.di.dataModule
+import com.diego.shoping_list.di.interactorModule
 import com.diego.shoping_list.di.repositoryModule
 import com.diego.shoping_list.di.useCaseModule
 import com.diego.shoping_list.di.viewModelModule
@@ -17,6 +18,7 @@ class App : Application() {
             modules(
                 dataModule,
                 repositoryModule,
+                interactorModule,
                 viewModelModule,
                 useCaseModule
             )

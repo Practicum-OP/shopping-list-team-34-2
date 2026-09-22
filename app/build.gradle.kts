@@ -39,6 +39,10 @@ android {
 }
 
 dependencies {
+// view model
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
 //    database
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)

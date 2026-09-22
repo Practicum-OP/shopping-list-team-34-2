@@ -10,4 +10,9 @@
     <string name="shopping_list_title">Мои списки</string>
     <string name="shopping_list_empty_title">У вас пока нет списков</string>
     <string name="shopping_list_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
+    <string name="shopping_title_dialog">Добавление списка</string>
+    <string name="shopping_edit_dialog">Название списка</string>
+    <string name="shopping_hint_dialog">Новый список</string>
+    <string name="cancel_dialog">Отмена</string>
+    <string name="create_dialog">Создать</string>
 </resources>
