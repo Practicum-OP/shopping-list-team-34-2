@@ -34,19 +34,11 @@ fun ProductItem(product: Product) {
             .height(72.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // ==== Чекбокс ====
         CustomCheckbox(
             checked = checked,
-            onCheckedChange = { checked = it } /*{  checked ->
-                    scope.launch {
-                        productRepository.updateProduct(
-                            product.copy(isChecked = checked)
-                        )
-                    }
-            }*/
+            onCheckedChange = { checked = it } 
         )
 
-        // ==== Левая часть: имя + кол-во ====
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = product.name,
@@ -58,39 +50,6 @@ fun ProductItem(product: Product) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-
-//region ==== Кнопки ====
-        /*IconButton(onClick = {*//*
-                scope.launch {
-                    productRepository.updateProduct(
-                        product.copy(name = "${product.name}(edit)")
-                    )
-                }*//*
-            }) {
-                Text("edit")
-            }
-
-            IconButton(onClick = {*//*
-                scope.launch {
-                    productRepository.addProduct(
-                        listId = product.listId,
-                        name = "${product.name}(copy)",
-                        quantity = product.quantity,
-                        unit = product.unit
-                    )
-                }*//*
-            }) {
-                Text("copy")
-            }
-
-            IconButton(onClick = {*//*
-                scope.launch {
-                    productRepository.deleteProduct(product)
-                }*//*
-            }) {
-                Text("del")
-            }*/
-//endregion
     }
 }
 
@@ -114,12 +73,11 @@ fun CustomCheckbox(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Выбираем ресурс в зависимости от состояния
     val iconRes = if (checked) {
 
-        R.drawable.ic_checkbox_on  // ваша иконка "выбрано"
+        R.drawable.ic_checkbox_on
     } else {
-        R.drawable.ic_checkbox_off // ваша иконка "не выбрано"
+        R.drawable.ic_checkbox_off
     }
 
     IconButton(
@@ -129,7 +87,7 @@ fun CustomCheckbox(
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = if (checked) "Выбрано" else "Не выбрано",
-            modifier = Modifier.size(24.dp), // при необходимости задайте размер
+            modifier = Modifier.size(24.dp),
             tint = Color.Unspecified
         )
     }
