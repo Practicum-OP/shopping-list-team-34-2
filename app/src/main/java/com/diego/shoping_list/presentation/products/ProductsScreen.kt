@@ -1,5 +1,7 @@
 package com.diego.shoping_list.presentation.products
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,15 +28,14 @@ import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.presentation.common.AppTopBar
 import com.diego.shoping_list.presentation.products.components.AddProductBottomSheetContent
-import com.diego.shoping_list.presentation.products.components.FloatingOverlayButton
 import com.diego.shoping_list.presentation.products.components.ProductItem
+import com.diego.shoping_list.presentation.products.components.SwipeToActionBox
 import com.diego.shoping_list.presentation.shoppingList.ShoppingListFab
 import com.diego.shoping_list.ui.theme.Dimens
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ProductsScreen(
-    listId: Long,
     viewModel: ProductsViewModel = koinViewModel(),
     onBackClick: () -> Unit
 ) {
@@ -57,7 +58,10 @@ fun ProductsScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (uiState.isAddSheetVisible) {
-                ShowProductList(uiState.products)
+                ShowProductList(
+                    uiState.products,
+                    onEdit = { },
+                    onDelete = { viewModel.deleteProduct(it) })
             } else {
                 when (uiState.content) {
                     is ProductScreenState.IsEmpty -> {
@@ -65,7 +69,10 @@ fun ProductsScreen(
                     }
 
                     is ProductScreenState.ShowShoppingList -> {
-                        ShowProductList(uiState.products)
+                        ShowProductList(
+                            uiState.products,
+                            onEdit = { },
+                            onDelete = { viewModel.deleteProduct(it) })
                     }
                 }
 
@@ -74,7 +81,7 @@ fun ProductsScreen(
     }
 
     if (uiState.isAddSheetVisible) {
-        AddProductBottomSheet(onDismiss = viewModel::onDismissAddProduct)
+        AddProductBottomSheet(viewModel, onDismiss = viewModel::onDismissAddProduct)
     }
 }
 
@@ -102,20 +109,43 @@ private fun ShowEmptyScreen() {
 }
 
 @Composable
-private fun ShowProductList(productsList: List<Product>) {
+private fun ShowProductList(
+    productsList: List<Product>,
+    onEdit: (Product) -> Unit,
+    onDelete: (Product) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
     ) {
         items(items = productsList, key = { it.id }) { product ->
-            ProductItem(product)
+            SwipeToActionBox(
+                onSwipeStartToEnd = { onEdit(product) },
+                onSwipeEndToStart = { onDelete(product) },
+                startIcon = R.drawable.ic_search,
+                endIcon = R.drawable.ic_delete,
+                modifier = Modifier.animateItem()
+            ) {
+                ProductItem(
+                    product,
+                    onToggleChecked = { },
+                    modifier = Modifier.animateItem(
+                        fadeInSpec = tween(300),
+                        fadeOutSpec = tween(400),
+                        placementSpec = tween(
+                            durationMillis = 600,
+                            easing = FastOutSlowInEasing
+                        )
+                    )
+                )
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddProductBottomSheet(onDismiss: () -> Unit) {
+private fun AddProductBottomSheet(viewModel: ProductsViewModel, onDismiss: () -> Unit) {
     val sheetState = rememberModalBottomSheetState()
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -123,10 +153,6 @@ private fun AddProductBottomSheet(onDismiss: () -> Unit) {
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
-        AddProductBottomSheetContent()
-        FloatingOverlayButton(
-            visible = true,
-            onClick = {}
-        )
+        AddProductBottomSheetContent(viewModel)
     }
 }

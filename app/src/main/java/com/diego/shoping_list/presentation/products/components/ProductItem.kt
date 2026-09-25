@@ -1,5 +1,6 @@
 package com.diego.shoping_list.presentation.products.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,26 +20,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.model.Product
 
 @Composable
-fun ProductItem(product: Product) {
+fun ProductItem(
+    product: Product,
+    onToggleChecked: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var checked by remember { mutableStateOf(product.isChecked) }
+
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .height(72.dp),
+            .height(72.dp)
+            .clickable(onClick = { checked = !checked }),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CustomCheckbox(
             checked = checked,
-            onCheckedChange = { checked = it } 
+            onCheckedChange = { checked = it }
         )
-
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = product.name,
@@ -51,20 +56,6 @@ fun ProductItem(product: Product) {
             )
         }
     }
-}
-
-@Preview
-@Composable
-private fun ProductItemPreview() {
-    ProductItem(
-        Product(
-            id = 15,
-            name = "Молоко",
-            quantity = 2,
-            unit = "л",
-            isChecked = true
-        )
-    )
 }
 
 @Composable
