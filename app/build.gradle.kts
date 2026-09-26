@@ -42,6 +42,7 @@ dependencies {
 // view model
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.material3)
 
 //    database
     implementation(libs.androidx.room.runtime)

@@ -13,7 +13,8 @@ import com.diego.shoping_list.presentation.start.StartScreen
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
-    NavHost(navController = navController,
+    NavHost(
+        navController = navController,
         startDestination = Screen.Start.route
     ) {
         composable(Screen.Start.route) {
@@ -26,16 +27,15 @@ fun AppNavGraph() {
             )
         }
         composable(Screen.Main.route) {
-            ShoppingListScreen( onShoppingListClick = { listId ->
-                navController.navigate("products/${listId}")})
+            ShoppingListScreen(onShoppingListClick = { listId ->
+                navController.navigate("products/${listId}")
+            })
         }
         composable(
             route = Screen.Products.route,
             arguments = listOf(navArgument("listId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val listId = backStackEntry.arguments?.getLong("listId") ?: 0L
+        ) {
             ProductsScreen(
-                listId = listId,
                 onBackClick = { navController.popBackStack() }
             )
         }

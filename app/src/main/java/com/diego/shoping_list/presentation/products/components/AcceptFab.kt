@@ -30,7 +30,7 @@ fun FloatingOverlayButton(
         FloatingActionButton(onClick = onClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_fab_apply),
-                contentDescription = stringResource(R.string.action_add_list),
+                contentDescription = stringResource(R.string.action_add_list)
             )
         }
     }

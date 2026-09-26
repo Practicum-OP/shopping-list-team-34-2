@@ -23,10 +23,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.diego.shoping_list.presentation.products.ProductsViewModel
 
 
 @Composable
-fun AddProductBottomSheetContent() {
+fun AddProductBottomSheetContent(viewModel: ProductsViewModel) {
 
     val focusManager = LocalFocusManager.current
     var nameInput by remember { mutableStateOf("") }
@@ -92,4 +93,9 @@ fun AddProductBottomSheetContent() {
             )
         }
     }
+
+    FloatingOverlayButton(
+        visible = true,
+        onClick = { viewModel.addProduct(nameInput, quantityInput.toInt(), unitInput) }
+    )
 }

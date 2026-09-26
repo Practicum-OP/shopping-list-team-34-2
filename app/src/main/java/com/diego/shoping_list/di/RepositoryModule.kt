@@ -11,6 +11,6 @@ val repositoryModule = module {
         ShoppingListRepositoryImpl(get(), get())
     }
     single<ProductInListRepository> {
-        ProductInListRepositoryImpl(get(), get())
+        ProductInListRepositoryImpl(get(), get(), get())
     }
 }
