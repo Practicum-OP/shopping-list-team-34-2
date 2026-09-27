@@ -28,6 +28,7 @@ fun ShoppingListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
+    var iconSheetListId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -50,6 +51,7 @@ fun ShoppingListScreen(
             is UiState.Content -> ShoppingListContent(
                 shoppingLists = state.shoppingLists,
                 onShoppingListClick = onShoppingListClick,
+                onIconClick = { listId -> iconSheetListId = listId },
                 contentPadding = innerPadding
             )
         }
@@ -82,6 +84,13 @@ fun ShoppingListScreen(
             },
             onDismiss = { showDeleteAllDialog = false },
             iconResId = R.drawable.ic_warning,
+        )
+    }
+
+    iconSheetListId?.let { listId ->
+        ShoppingListIconSheet(
+            onIconSelected = { icon -> viewModel.changeListIcon(listId, icon) },
+            onDismiss = { iconSheetListId = null },
         )
     }
 }

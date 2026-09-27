@@ -30,6 +30,8 @@ interface ShoppingListDao {
     @Update
     suspend fun update(list: ShoppingListEntity)
 
+    @Query("UPDATE shopping_list_table SET iconKey = :iconKey WHERE id = :id")
+    suspend fun updateIcon(id: Long, iconKey: String)
     @Delete
     suspend fun delete(list: ShoppingListEntity)
 

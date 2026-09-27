@@ -9,6 +9,7 @@
 
     <string name="shopping_list_title">Мои списки</string>
     <string name="shopping_list_empty_title">У вас пока нет списков</string>
+    <string name="shopping_list_change_icon">Сменить иконку</string>
     <string name="shopping_list_delete_all_title">Удалить все списки?</string>
     <string name="shopping_list_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
 
