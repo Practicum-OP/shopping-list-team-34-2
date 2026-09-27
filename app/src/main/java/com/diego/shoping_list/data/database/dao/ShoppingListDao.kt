@@ -32,4 +32,7 @@ interface ShoppingListDao {
 
     @Delete
     suspend fun delete(list: ShoppingListEntity)
+
+    @Query("DELETE FROM shopping_list_table")
+    suspend fun deleteAll()
 }

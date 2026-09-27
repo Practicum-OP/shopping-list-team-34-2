@@ -32,4 +32,10 @@ class ShoppingListViewModel(
             interactor.addList(name)
         }
     }
+
+    fun deleteAllLists() {
+        viewModelScope.launch {
+            interactor.deleteAllLists()
+        }
+    }
 }

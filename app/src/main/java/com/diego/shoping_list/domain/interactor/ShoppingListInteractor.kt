@@ -7,4 +7,6 @@ interface ShoppingListInteractor {
     fun getLists(): Flow<List<ShoppingList>>
 
     suspend fun addList(name: String)
+
+    suspend fun deleteAllLists()
 }

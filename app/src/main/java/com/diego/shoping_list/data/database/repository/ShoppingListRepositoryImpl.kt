@@ -57,4 +57,14 @@ class ShoppingListRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun deleteAllLists(): Result<Unit> {
+        return try {
+            dao.deleteAll()
+            productInListDao.deleteAll()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

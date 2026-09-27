@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.diego.shoping_list.R
+import com.diego.shoping_list.presentation.common.AppConfirmDialog
 import com.diego.shoping_list.presentation.common.DialogWindow
 import com.diego.shoping_list.presentation.shoppingList.view_model.ShoppingListViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -26,6 +27,7 @@ fun ShoppingListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -33,7 +35,7 @@ fun ShoppingListScreen(
             ShoppingListTopBar(
                 isDarkTheme = isDarkTheme,
                 onSearchClick = {},
-                onDeleteClick = {},
+                onDeleteClick = { showDeleteAllDialog = true },
                 onToggleTheme = onToggleTheme,
             )
         },
@@ -66,6 +68,20 @@ fun ShoppingListScreen(
             },
             iconResId = R.drawable.ic_dialog,
             hint = stringResource(R.string.shopping_hint_dialog),
+        )
+    }
+
+    if (showDeleteAllDialog) {
+        AppConfirmDialog(
+            title = stringResource(R.string.shopping_list_delete_all_title),
+            confirmText = stringResource(R.string.action_delete),
+            dismissText = stringResource(R.string.cancel_dialog),
+            onConfirm = {
+                viewModel.deleteAllLists()
+                showDeleteAllDialog = false
+            },
+            onDismiss = { showDeleteAllDialog = false },
+            iconResId = R.drawable.ic_warning,
         )
     }
 }
