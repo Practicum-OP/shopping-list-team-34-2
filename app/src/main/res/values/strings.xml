@@ -4,6 +4,8 @@
     <string name="action_back">Назад</string>
     <string name="action_search">Поиск</string>
     <string name="action_delete">Удалить</string>
+    <string name="action_rename">Переименовать</string>
+    <string name="action_copy">Копировать</string>
     <string name="action_toggle_theme">Сменить тему</string>
     <string name="action_add_list">Создать список</string>
 

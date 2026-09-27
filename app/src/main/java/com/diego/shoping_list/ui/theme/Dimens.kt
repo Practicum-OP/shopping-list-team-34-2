@@ -16,4 +16,5 @@ object Dimens {
     val iconPickerItemSize = 48.dp
     val iconPickerSpacing = 16.dp
     val iconPickerBottomPadding = 24.dp
+    val swipeActionSize = 40.dp
 }

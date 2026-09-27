@@ -29,11 +29,17 @@ fun ShoppingListContent(
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmall)
     ) {
         items(shoppingLists, key = { it.id }) { shoppingList ->
-            ShoppingListCard(
-                shoppingList = shoppingList,
-                onClick = { onShoppingListClick(shoppingList.id) },
-                onIconClick = { onIconClick(shoppingList.id) }
-            )
+            ShoppingListSwipeItem(
+                onRenameClick = {},
+                onCopyClick = {},
+                onDeleteClick = {},
+            ) {
+                ShoppingListCard(
+                    shoppingList = shoppingList,
+                    onClick = { onShoppingListClick(shoppingList.id) },
+                    onIconClick = { onIconClick(shoppingList.id) }
+                )
+            }
         }
     }
 }
