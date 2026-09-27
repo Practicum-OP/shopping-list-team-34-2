@@ -13,4 +13,8 @@ object Dimens {
     val listItemHeight = 56.dp
     val cardCornerRadius = 12.dp
     val cardElevation = 3.dp
+    val iconPickerItemSize = 48.dp
+    val iconPickerSpacing = 16.dp
+    val iconPickerBottomPadding = 24.dp
+    val swipeActionSize = 40.dp
 }

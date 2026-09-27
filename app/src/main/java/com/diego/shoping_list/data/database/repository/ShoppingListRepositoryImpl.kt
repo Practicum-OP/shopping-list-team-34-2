@@ -48,10 +48,29 @@ class ShoppingListRepositoryImpl(
         }
     }
 
+    override suspend fun updateListIcon(id: Long, iconKey: String): Result<Unit> {
+        return try {
+            dao.updateIcon(id, iconKey)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun deleteList(list: ShoppingListEntity): Result<Unit> {
         return try {
             dao.delete(list)
             productInListDao.deleteByList(list.id)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteAllLists(): Result<Unit> {
+        return try {
+            dao.deleteAll()
+            productInListDao.deleteAll()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

@@ -12,38 +12,46 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.diego.shoping_list.R
+import com.diego.shoping_list.presentation.common.AppConfirmDialog
 import com.diego.shoping_list.presentation.common.DialogWindow
 import com.diego.shoping_list.presentation.shoppingList.view_model.ShoppingListViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ShoppingListScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ShoppingListViewModel = koinViewModel(),
     onShoppingListClick: (Long) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
+    var iconSheetListId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ShoppingListTopBar(
+                isDarkTheme = isDarkTheme,
                 onSearchClick = {},
-                onDeleteClick = {},
-                onToggleTheme = {},
+                onDeleteClick = { showDeleteAllDialog = true },
+                onToggleTheme = onToggleTheme,
             )
         },
         floatingActionButton = { ShoppingListFab(onClick = { showAddDialog = true }) },
     ) { innerPadding ->
         when (val state = uiState) {
             is UiState.Empty -> ShoppingListEmptyState(
+                isDarkTheme = isDarkTheme,
                 modifier = Modifier.padding(innerPadding)
             )
 
             is UiState.Content -> ShoppingListContent(
                 shoppingLists = state.shoppingLists,
                 onShoppingListClick = onShoppingListClick,
+                onIconClick = { listId -> iconSheetListId = listId },
                 contentPadding = innerPadding
             )
         }
@@ -62,6 +70,27 @@ fun ShoppingListScreen(
             },
             iconResId = R.drawable.ic_dialog,
             hint = stringResource(R.string.shopping_hint_dialog),
+        )
+    }
+
+    if (showDeleteAllDialog) {
+        AppConfirmDialog(
+            title = stringResource(R.string.shopping_list_delete_all_title),
+            confirmText = stringResource(R.string.action_delete),
+            dismissText = stringResource(R.string.cancel_dialog),
+            onConfirm = {
+                viewModel.deleteAllLists()
+                showDeleteAllDialog = false
+            },
+            onDismiss = { showDeleteAllDialog = false },
+            iconResId = R.drawable.ic_warning,
+        )
+    }
+
+    iconSheetListId?.let { listId ->
+        ShoppingListIconSheet(
+            onIconSelected = { icon -> viewModel.changeListIcon(listId, icon) },
+            onDismiss = { iconSheetListId = null },
         )
     }
 }

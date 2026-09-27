@@ -10,5 +10,8 @@ interface ShoppingListRepository {
 
     suspend fun updateList(list: ShoppingListEntity): Result<Unit>
 
+    suspend fun updateListIcon(id: Long, iconKey: String): Result<Unit>
     suspend fun deleteList(list: ShoppingListEntity): Result<Unit>
+
+    suspend fun deleteAllLists(): Result<Unit>
 }

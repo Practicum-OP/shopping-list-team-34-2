@@ -20,4 +20,12 @@ class ShoppingListInteractorImpl(
     override suspend fun addList(name: String) {
         repository.addList(name, ListIcon.default.key)
     }
+
+    override suspend fun changeListIcon(listId: Long, icon: ListIcon) {
+        repository.updateListIcon(listId, icon.key)
+    }
+
+    override suspend fun deleteAllLists() {
+        repository.deleteAllLists()
+    }
 }

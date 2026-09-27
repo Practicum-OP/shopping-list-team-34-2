@@ -34,4 +34,7 @@ interface ProductInListDao {
 
     @Query("DELETE FROM product_in_list_table WHERE isChecked = 1 AND listId = :listId")
     suspend fun deleteChecked(listId: Long)
+
+    @Query("DELETE FROM product_in_list_table")
+    suspend fun deleteAll()
 }

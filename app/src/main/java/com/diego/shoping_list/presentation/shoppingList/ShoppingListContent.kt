@@ -14,6 +14,7 @@ import com.diego.shoping_list.ui.theme.Dimens
 fun ShoppingListContent(
     shoppingLists: List<ShoppingList>,
     onShoppingListClick: (Long) -> Unit,
+    onIconClick: (Long) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier
 ) {
@@ -28,10 +29,17 @@ fun ShoppingListContent(
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmall)
     ) {
         items(shoppingLists, key = { it.id }) { shoppingList ->
-            ShoppingListCard(
-                shoppingList = shoppingList,
-                onClick = { onShoppingListClick(shoppingList.id) }
-            )
+            ShoppingListSwipeItem(
+                onRenameClick = {},
+                onCopyClick = {},
+                onDeleteClick = {},
+            ) {
+                ShoppingListCard(
+                    shoppingList = shoppingList,
+                    onClick = { onShoppingListClick(shoppingList.id) },
+                    onIconClick = { onIconClick(shoppingList.id) }
+                )
+            }
         }
     }
 }
