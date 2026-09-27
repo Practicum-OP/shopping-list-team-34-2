@@ -11,7 +11,10 @@ import com.diego.shoping_list.presentation.shoppingList.ShoppingListScreen
 import com.diego.shoping_list.presentation.start.StartScreen
 
 @Composable
-fun AppNavGraph() {
+fun AppNavGraph(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -27,9 +30,13 @@ fun AppNavGraph() {
             )
         }
         composable(Screen.Main.route) {
-            ShoppingListScreen(onShoppingListClick = { listId ->
-                navController.navigate("products/${listId}")
-            })
+            ShoppingListScreen(
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
+                onShoppingListClick = { listId ->
+                    navController.navigate("products/${listId}")
+                },
+            )
         }
         composable(
             route = Screen.Products.route,

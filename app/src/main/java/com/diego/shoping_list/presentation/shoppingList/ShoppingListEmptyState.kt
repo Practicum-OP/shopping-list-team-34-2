@@ -1,7 +1,6 @@
 package com.diego.shoping_list.presentation.shoppingList
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,8 +17,11 @@ import com.diego.shoping_list.R
 import com.diego.shoping_list.ui.theme.Dimens
 
 @Composable
-fun ShoppingListEmptyState(modifier: Modifier = Modifier) {
-    val illustration = if (isSystemInDarkTheme()) {
+fun ShoppingListEmptyState(
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val illustration = if (isDarkTheme) {
         R.drawable.ic_empty_lists_dark
     } else {
         R.drawable.ic_empty_lists

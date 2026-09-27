@@ -18,6 +18,8 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ShoppingListScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ShoppingListViewModel = koinViewModel(),
     onShoppingListClick: (Long) -> Unit
@@ -29,15 +31,17 @@ fun ShoppingListScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ShoppingListTopBar(
+                isDarkTheme = isDarkTheme,
                 onSearchClick = {},
                 onDeleteClick = {},
-                onToggleTheme = {},
+                onToggleTheme = onToggleTheme,
             )
         },
         floatingActionButton = { ShoppingListFab(onClick = { showAddDialog = true }) },
     ) { innerPadding ->
         when (val state = uiState) {
             is UiState.Empty -> ShoppingListEmptyState(
+                isDarkTheme = isDarkTheme,
                 modifier = Modifier.padding(innerPadding)
             )
 

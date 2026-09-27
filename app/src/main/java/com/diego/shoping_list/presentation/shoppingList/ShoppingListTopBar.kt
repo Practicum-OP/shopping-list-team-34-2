@@ -1,6 +1,5 @@
 package com.diego.shoping_list.presentation.shoppingList
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -10,11 +9,12 @@ import com.diego.shoping_list.presentation.common.AppTopBar
 
 @Composable
 fun ShoppingListTopBar(
+    isDarkTheme: Boolean,
     onSearchClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onToggleTheme: () -> Unit,
 ) {
-    val themeModeIcon = if (isSystemInDarkTheme()) {
+    val themeModeIcon = if (isDarkTheme) {
         R.drawable.ic_theme_mode_dark
     } else {
         R.drawable.ic_theme_mode
