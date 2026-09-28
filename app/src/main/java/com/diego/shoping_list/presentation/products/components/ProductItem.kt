@@ -12,10 +12,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,19 +26,18 @@ fun ProductItem(
     onToggleChecked: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var checked by remember { mutableStateOf(product.isChecked) }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .height(72.dp)
-            .clickable(onClick = { checked = !checked }),
+            .clickable { onToggleChecked(!product.isChecked) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         CustomCheckbox(
-            checked = checked,
-            onCheckedChange = { checked = it }
+            checked = product.isChecked,
+            onCheckedChange = onToggleChecked
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

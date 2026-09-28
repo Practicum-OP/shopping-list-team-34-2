@@ -26,6 +26,9 @@ interface ProductInListDao {
     @Update
     suspend fun update(product: ProductInListEntity)
 
+    @Query("UPDATE product_in_list_table SET isChecked = :checked WHERE id = :productId")
+    suspend fun updateChecked(productId: Long, checked: Boolean)
+
     @Delete
     suspend fun delete(product: ProductInListEntity)
 
