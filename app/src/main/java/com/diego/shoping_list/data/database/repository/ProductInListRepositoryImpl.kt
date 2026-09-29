@@ -8,6 +8,7 @@ import com.diego.shoping_list.data.database.entities.ProductInListEntity
 import com.diego.shoping_list.data.database.entities.ProductNameEntity
 import com.diego.shoping_list.data.database.mapper.ProductMapper
 import com.diego.shoping_list.domain.model.Product
+import com.diego.shoping_list.domain.model.ProductSuggestion
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.coroutines.cancellation.CancellationException
@@ -26,6 +27,10 @@ class ProductInListRepositoryImpl(
         appDatabase.productInListDao().observeAllProducts().map { entities ->
             entities.map { ProductMapper().productMapFromEntity(it) }
         }
+
+    override fun observeSuggestions(query: String): Flow<List<ProductSuggestion>> =
+        productNameDao.suggestByName(query)
+            .map { list -> list.map { ProductSuggestion(it.name, it.defaultUnit) } }
 
     override suspend fun addProduct(
         listId: Long,
@@ -64,9 +69,20 @@ class ProductInListRepositoryImpl(
         }
     }
 
-    override suspend fun updateProduct(product: ProductInListEntity): Result<Unit> {
+    override suspend fun updateProduct(product: Product): Result<Unit> {
         return try {
-            productDao.update(product)
+            productDao.update(ProductMapper().productMapToEntity(product))
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateChecked(productId: Long, checked: Boolean): Result<Unit> {
+        return try {
+            productDao.updateChecked(productId, checked)
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e

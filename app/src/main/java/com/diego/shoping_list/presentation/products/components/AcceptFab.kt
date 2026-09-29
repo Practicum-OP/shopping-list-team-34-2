@@ -16,7 +16,8 @@ import com.diego.shoping_list.R
 @Composable
 fun FloatingOverlayButton(
     visible: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true
 ) {
     val offsetY = with(LocalDensity.current) { (-250).dp.roundToPx() }
 
@@ -24,10 +25,10 @@ fun FloatingOverlayButton(
 
     Popup(
         alignment = Alignment.BottomEnd,
-        offset = IntOffset(-35, offsetY), // Уточнить отступы
+        offset = IntOffset(-35, offsetY),
         properties = PopupProperties(focusable = false)
     ) {
-        FloatingActionButton(onClick = onClick) {
+        FloatingActionButton(onClick = { if (enabled) onClick() }) {
             Icon(
                 painter = painterResource(R.drawable.ic_fab_apply),
                 contentDescription = stringResource(R.string.action_add_list)

@@ -5,10 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diego.shoping_list.data.database.repository.ProductInListRepository
 import com.diego.shoping_list.domain.model.Product
+import com.diego.shoping_list.domain.model.ProductSuggestion
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,49 +22,239 @@ class ProductsViewModel(
 
     private val listId: Long = savedStateHandle.get<Long>("listId") ?: 0L
 
+    private val _uiState = MutableStateFlow(ProductsUiState())
+    val uiState: StateFlow<ProductsUiState> = _uiState.asStateFlow()
+
+    private val minQuantity = 1
+    private val maxQuantity = 999
+
     init {
         loadProducts()
     }
 
-    private val _uiState = MutableStateFlow(ProductsUiState())
-
-    val uiState: StateFlow<ProductsUiState> = _uiState.asStateFlow()
-
     private fun loadProducts() {
         viewModelScope.launch {
             repository.observeByList(listId).collectLatest { list ->
-                _uiState.update { state ->
-                    state.copy(
-                        products = list,
-                        content = if (list.isEmpty()) {
-                            ProductScreenState.IsEmpty
-                        } else {
-                            ProductScreenState.ShowShoppingList
-                        }
-                    )
-
-                }
+                _uiState.update { it.copy(products = list) }
             }
         }
     }
 
+    fun suggestionsFor(query: String): Flow<List<ProductSuggestion>> =
+        if (query.isBlank()) flowOf(emptyList())
+        else repository.observeSuggestions(query)
+
     fun onAddProductClick() {
-        _uiState.update { it.copy(isAddSheetVisible = true) }
+        _uiState.update {
+            it.copy(
+                isAddSheetVisible = true,
+                addForm = AddProductFormState()
+            )
+        }
     }
 
     fun onDismissAddProduct() {
-        _uiState.update { it.copy(isAddSheetVisible = false) }
-    }
-
-    fun addProduct(name: String, quantity: Int, unit: String) {
-        viewModelScope.launch {
-            repository.addProduct(listId = listId, name = name, quantity = quantity, unit = unit)
+        _uiState.update {
+            it.copy(
+                isAddSheetVisible = false,
+                addForm = AddProductFormState()
+            )
         }
-        _uiState.update { it.copy(isAddSheetVisible = false) }
     }
 
-    fun editProduct(product: Product) {
+    fun onAddProductEvent(event: AddProductEvent) {
+        when (event) {
+            is AddProductEvent.NameChange -> _uiState.update {
+                it.copy(addForm = it.addForm.copy(name = event.value, nameError = null))
+            }
 
+            is AddProductEvent.QuantityChange -> {
+                val digits = event.value
+                    .filter { it.isDigit() }
+                    .take(maxQuantity.toString().length)
+                _uiState.update {
+                    it.copy(addForm = it.addForm.copy(quantity = digits, quantityError = null))
+                }
+            }
+
+            is AddProductEvent.UnitChange -> _uiState.update {
+                it.copy(addForm = it.addForm.copy(unit = event.value))
+            }
+
+            is AddProductEvent.SuggestionSelected -> {
+                _uiState.update { state ->
+                    state.copy(
+                        addForm = state.addForm.copy(
+                            name = event.suggestion.name,
+                            unit = event.suggestion.defaultUnit
+                        )
+                    )
+                }
+            }
+
+            is AddProductEvent.EditProduct -> {
+                val fresh = _uiState.value.products.find { it.id == event.productId } ?: return
+                _uiState.update {
+                    it.copy(
+                        isAddSheetVisible = true,
+                        addForm = AddProductFormState(
+                            editingProduct = fresh,
+                            name = fresh.name,
+                            quantity = fresh.quantity.toString(),
+                            unit = fresh.unit
+                        )
+                    )
+                }
+            }
+
+            AddProductEvent.Increment -> _uiState.update { state ->
+                val current = state.addForm.quantity.toIntOrNull()
+                val next = when {
+                    current == null -> 1
+                    else -> (current + 1).coerceAtMost(maxQuantity)
+                }
+                state.copy(
+                    addForm = state.addForm.copy(
+                        quantity = next.toString(),
+                        quantityError = null
+                    )
+                )
+            }
+
+            AddProductEvent.Decrement -> _uiState.update { state ->
+                val current = state.addForm.quantity.toIntOrNull() ?: return@update state
+                val next = (current - 1).coerceIn(minQuantity, maxQuantity)
+                state.copy(addForm = state.addForm.copy(quantity = next.toString()))
+            }
+
+            AddProductEvent.Submit -> submitProduct()
+
+            AddProductEvent.Reset -> _uiState.update {
+                it.copy(addForm = AddProductFormState())
+            }
+        }
+    }
+
+    private fun submitProduct() {
+        val form = _uiState.value.addForm
+
+        val nameError = if (form.name.isBlank()) "Введите название" else null
+        val qty = form.quantity.toIntOrNull()
+        val quantityError = when {
+            qty == null -> "Введите количество"
+            qty !in minQuantity..maxQuantity -> "От $minQuantity до $maxQuantity"
+            else -> null
+        }
+
+        if (nameError != null || quantityError != null) {
+            _uiState.update {
+                it.copy(
+                    addForm = it.addForm.copy(
+                        nameError = nameError,
+                        quantityError = quantityError
+                    )
+                )
+            }
+            return
+        }
+
+        _uiState.update { it.copy(addForm = it.addForm.copy(isSubmitting = true)) }
+
+        viewModelScope.launch {
+            val editing = form.editingProduct
+            if (editing == null) {
+                repository.addProduct(
+                    listId = listId,
+                    name = form.name,
+                    quantity = qty!!,
+                    unit = form.unit
+                )
+            } else {
+                repository.updateProduct(
+                    editing.copy(
+                        name = form.name,
+                        quantity = qty!!,
+                        unit = form.unit
+                    )
+                )
+            }
+        }
+
+        _uiState.update {
+            it.copy(
+                isAddSheetVisible = false,
+                addForm = AddProductFormState()
+            )
+        }
+
+    }
+
+    fun onProductCheckedChange(product: Product, checked: Boolean) {
+        viewModelScope.launch {
+            repository.updateChecked(product.id, checked)
+        }
+    }
+
+    fun onProductsMenuClick() {
+        _uiState.update {
+            it.copy(
+                isMenuSheetVisible = true
+            )
+        }
+    }
+
+    fun onDismissMenuProduct() {
+        _uiState.update {
+            it.copy(
+                isMenuSheetVisible = false
+            )
+        }
+    }
+
+    fun onProductsMenuEvent(event: ProductsMenuEvent) {
+        when (event) {
+            ProductsMenuEvent.Sorting -> {}
+
+            ProductsMenuEvent.DeleteAll -> {
+                _uiState.update {
+                    it.copy(
+                        isMenuSheetVisible = false,
+                        isDeleteAllDialogVisible = true
+                    )
+                }
+            }
+
+            ProductsMenuEvent.ClearChecked -> {
+                _uiState.update {
+                    it.copy(
+                        isMenuSheetVisible = false,
+                        isClearCheckedDialogVisible = true
+                    )
+                }
+            }
+
+            ProductsMenuEvent.ConfirmDeleteAll -> {
+                _uiState.update { it.copy(isDeleteAllDialogVisible = false) }
+                viewModelScope.launch {
+                    repository.deleteAllInList(listId)
+                }
+            }
+
+            ProductsMenuEvent.DismissDeleteAllDialog -> {
+                _uiState.update { it.copy(isDeleteAllDialogVisible = false) }
+            }
+
+            ProductsMenuEvent.ConfirmClearChecked -> {
+                _uiState.update { it.copy(isClearCheckedDialogVisible = false) }
+                viewModelScope.launch {
+                    repository.deleteCheckedInList(listId)
+                }
+            }
+
+            ProductsMenuEvent.DismissClearCheckedDialog -> {
+                _uiState.update { it.copy(isClearCheckedDialogVisible = false) }
+            }
+        }
     }
 
     fun deleteProduct(product: Product) {
@@ -71,13 +264,18 @@ class ProductsViewModel(
     }
 }
 
-sealed interface ProductScreenState {
-    object IsEmpty : ProductScreenState
-    object ShowShoppingList : ProductScreenState
-}
-
 data class ProductsUiState(
     val products: List<Product> = emptyList(),
-    val content: ProductScreenState = ProductScreenState.IsEmpty,
-    val isAddSheetVisible: Boolean = false
-)
+    val isAddSheetVisible: Boolean = false,
+    val isMenuSheetVisible: Boolean = false,
+    val isDeleteAllDialogVisible: Boolean = false,
+    val isClearCheckedDialogVisible: Boolean = false,
+    val addForm: AddProductFormState = AddProductFormState()
+) {
+    val isListEmpty: Boolean get() = products.isEmpty()
+    val hasCheckedItems: Boolean get() = products.any { it.isChecked }
+    val showEmptyPlaceholder: Boolean get() = products.isEmpty() && !isAddSheetVisible
+
+    val canClearChecked: Boolean get() = hasCheckedItems
+    val canDeleteAll: Boolean get() = !isListEmpty
+}
