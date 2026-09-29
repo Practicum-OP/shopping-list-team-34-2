@@ -1,4 +1,4 @@
-package com.diego.shoping_list.presentation.shoppingList
+package com.diego.shoping_list.presentation.shoppingList.state
 
 import com.diego.shoping_list.domain.ShoppingList
 

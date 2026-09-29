@@ -14,6 +14,12 @@ import androidx.compose.ui.res.stringResource
 import com.diego.shoping_list.R
 import com.diego.shoping_list.presentation.common.AppConfirmDialog
 import com.diego.shoping_list.presentation.common.DialogWindow
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListContent
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListEmptyState
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListFab
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListIconSheet
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListTopBar
+import com.diego.shoping_list.presentation.shoppingList.state.UiState
 import com.diego.shoping_list.presentation.shoppingList.view_model.ShoppingListViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -52,6 +58,8 @@ fun ShoppingListScreen(
                 shoppingLists = state.shoppingLists,
                 onShoppingListClick = onShoppingListClick,
                 onIconClick = { listId -> iconSheetListId = listId },
+                onDeleteConfirmed = { list -> viewModel.deleteList(list) },
+                onRenameConfirmed = { list, name -> viewModel.renameList(list, name) },
                 contentPadding = innerPadding
             )
         }

@@ -3,8 +3,9 @@ package com.diego.shoping_list.presentation.shoppingList.view_model
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diego.shoping_list.domain.ListIcon
+import com.diego.shoping_list.domain.ShoppingList
 import com.diego.shoping_list.domain.interactor.ShoppingListInteractor
-import com.diego.shoping_list.presentation.shoppingList.UiState
+import com.diego.shoping_list.presentation.shoppingList.state.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -37,6 +38,18 @@ class ShoppingListViewModel(
     fun changeListIcon(listId: Long, icon: ListIcon) {
         viewModelScope.launch {
             interactor.changeListIcon(listId, icon)
+        }
+    }
+
+    fun renameList(list: ShoppingList, name: String) {
+        viewModelScope.launch {
+            interactor.renameList(list, name)
+        }
+    }
+
+    fun deleteList(list: ShoppingList) {
+        viewModelScope.launch {
+            interactor.deleteList(list)
         }
     }
 

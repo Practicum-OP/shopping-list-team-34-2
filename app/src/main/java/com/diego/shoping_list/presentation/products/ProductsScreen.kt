@@ -30,7 +30,7 @@ import com.diego.shoping_list.presentation.common.AppTopBar
 import com.diego.shoping_list.presentation.products.components.AddProductBottomSheetContent
 import com.diego.shoping_list.presentation.products.components.ProductItem
 import com.diego.shoping_list.presentation.products.components.SwipeToActionBox
-import com.diego.shoping_list.presentation.shoppingList.ShoppingListFab
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListFab
 import com.diego.shoping_list.ui.theme.Dimens
 import org.koin.androidx.compose.koinViewModel
 
