@@ -76,10 +76,10 @@ fun TestDbProductScreen(
     }
 
     // ==== Подписка на продукты выбранного списка ====
-    LaunchedEffect(selectedList?.id) {
-        val id = selectedList?.id ?: return@LaunchedEffect
-        productRepository.observeByList(id).collectLatest { products = it }
-    }
+//    LaunchedEffect(selectedList?.id) {
+//        val id = selectedList?.id ?: return@LaunchedEffect
+//        productRepository.observeByList(id).collectLatest { products = it }
+//    }
 
     Column(
         modifier = modifier
@@ -193,79 +193,79 @@ fun TestDbProductScreen(
         Spacer(Modifier.height(8.dp))
 
         // ==== Список продуктов ====
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(products, key = { it.id }) { product ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // ==== Чекбокс ====
-                        Checkbox(
-                            checked = product.isChecked,
-                            onCheckedChange = { checked ->
-                                scope.launch {
-                                    productRepository.updateProduct(
-                                        product.copy(isChecked = checked)
-                                    )
-                                }
-                            }
-                        )
-
-                        // ==== Левая часть: имя + кол-во ====
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = product.name,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = "${product.quantity} ${product.unit}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        // ==== Кнопки ====
-                        IconButton(onClick = {
-                            scope.launch {
-                                productRepository.updateProduct(
-                                    product.copy(name = "${product.name}(edit)")
-                                )
-                            }
-                        }) {
-                            Text("edit")
-                        }
-
-                        IconButton(onClick = {
-                            scope.launch {
-                                productRepository.addProduct(
-                                    listId = product.listId,
-                                    name = "${product.name}(copy)",
-                                    quantity = product.quantity,
-                                    unit = product.unit
-                                )
-                            }
-                        }) {
-                            Text("copy")
-                        }
-
-                        IconButton(onClick = {
-                            scope.launch {
-                                productRepository.deleteProduct(product)
-                            }
-                        }) {
-                            Text("del")
-                        }
-                    }
-                }
-            }
-        }
+//        LazyColumn(modifier = Modifier.weight(1f)) {
+//            items(products, key = { it.id }) { product ->
+//                Card(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(vertical = 4.dp)
+//                ) {
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = 8.dp, vertical = 4.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        // ==== Чекбокс ====
+//                        Checkbox(
+//                            checked = product.isChecked,
+//                            onCheckedChange = { checked ->
+//                                scope.launch {
+//                                    productRepository.updateProduct(
+//                                        product.copy(isChecked = checked)
+//                                    )
+//                                }
+//                            }
+//                        )
+//
+//                        // ==== Левая часть: имя + кол-во ====
+//                        Column(modifier = Modifier.weight(1f)) {
+//                            Text(
+//                                text = product.name,
+//                                style = MaterialTheme.typography.bodyLarge
+//                            )
+//                            Text(
+//                                text = "${product.quantity} ${product.unit}",
+//                                style = MaterialTheme.typography.bodySmall,
+//                                color = MaterialTheme.colorScheme.onSurfaceVariant
+//                            )
+//                        }
+//
+//                        // ==== Кнопки ====
+//                        IconButton(onClick = {
+//                            scope.launch {
+//                                productRepository.updateProduct(
+//                                    product.copy(name = "${product.name}(edit)")
+//                                )
+//                            }
+//                        }) {
+//                            Text("edit")
+//                        }
+//
+//                        IconButton(onClick = {
+//                            scope.launch {
+//                                productRepository.addProduct(
+//                                    listId = product.listId,
+//                                    name = "${product.name}(copy)",
+//                                    quantity = product.quantity,
+//                                    unit = product.unit
+//                                )
+//                            }
+//                        }) {
+//                            Text("copy")
+//                        }
+//
+//                        IconButton(onClick = {
+//                            scope.launch {
+//                                productRepository.deleteProduct(product)
+//                            }
+//                        }) {
+//                            Text("del")
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 }
 
