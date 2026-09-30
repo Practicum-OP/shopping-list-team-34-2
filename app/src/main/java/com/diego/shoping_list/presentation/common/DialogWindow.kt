@@ -27,20 +27,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import com.diego.shoping_list.ui.theme.Dimens
 
+data class DialogWindow(
+    val title: String,
+    val label: String,
+    val confirmText: String,
+    val dismissText: String,
+    val hint: String = "",
+    val initialValue: String = "",
+)
+
 @Composable
-fun DialogWindow(
-    title: String,
-    label: String,
-    confirmText: String,
-    dismissText: String,
+fun AppDialogWindow(
+    dialogWindow: DialogWindow,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
     modifier: Modifier = Modifier,
-    @DrawableRes iconResId: Int? = null,
-    hint: String = "",
-    initialValue: String = "",
+    @DrawableRes iconResId: Int? = null
 ) {
-    var value by rememberSaveable { mutableStateOf(initialValue) }
+    var value by rememberSaveable { mutableStateOf(dialogWindow.initialValue) }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -62,7 +66,7 @@ fun DialogWindow(
         },
         title = {
             Text(
-                text = title,
+                text = dialogWindow.title,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
             )
@@ -73,13 +77,13 @@ fun DialogWindow(
                 onValueChange = { value = it },
                 label = {
                     Text(
-                        text = label,
+                        text = dialogWindow.label,
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(horizontal = Dimens.labelBackgroundPadding),
                     )
                 },
-                placeholder = { Text(text = hint) },
+                placeholder = { Text(text = dialogWindow.hint) },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.secondary,
@@ -98,7 +102,7 @@ fun DialogWindow(
                     contentColor = MaterialTheme.colorScheme.secondary
                 )
             ) {
-                Text(text = confirmText)
+                Text(text = dialogWindow.confirmText)
             }
         },
         dismissButton = {
@@ -108,7 +112,7 @@ fun DialogWindow(
                     contentColor = MaterialTheme.colorScheme.secondary
                 )
             ) {
-                Text(text = dismissText)
+                Text(text = dialogWindow.dismissText)
             }
         },
         iconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,

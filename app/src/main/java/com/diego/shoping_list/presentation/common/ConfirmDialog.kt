@@ -11,11 +11,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 
+data class ConfirmDialog (
+    val title: String,
+    val confirmText: String,
+    val dismissText: String,
+)
+
 @Composable
 fun AppConfirmDialog(
-    title: String,
-    confirmText: String,
-    dismissText: String,
+    confirmDialog: ConfirmDialog,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -32,15 +36,15 @@ fun AppConfirmDialog(
                 )
             }
         },
-        title = { Text(text = title) },
+        title = { Text(text = confirmDialog.title) },
         confirmButton = {
             Button(onClick = onConfirm) {
-                Text(text = confirmText)
+                Text(text = confirmDialog.confirmText)
             }
         },
         dismissButton = {
             FilledTonalButton(onClick = onDismiss) {
-                Text(text = dismissText)
+                Text(text = confirmDialog.dismissText)
             }
         },
         iconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
