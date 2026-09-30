@@ -8,3 +8,9 @@ fun ShoppingListEntity.toDomain(): ShoppingList = ShoppingList(
     nameList = nameList.replaceFirstChar { it.uppercase() },
     iconKey = iconKey
 )
+
+fun ShoppingList.toEntity(): ShoppingListEntity = ShoppingListEntity(
+    id = id,
+    nameList = nameList,
+    iconKey = iconKey
+)

@@ -22,4 +22,5 @@
     <string name="shopping_hint_dialog">Новый список</string>
     <string name="cancel_dialog">Отмена</string>
     <string name="create_dialog">Создать</string>
+    <string name="delete_list">Удалить список\n«%1$s»?</string>
 </resources>

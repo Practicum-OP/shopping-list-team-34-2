@@ -35,7 +35,7 @@ import com.diego.shoping_list.presentation.products.components.ConfirmDialog
 import com.diego.shoping_list.presentation.products.components.ProductItem
 import com.diego.shoping_list.presentation.products.components.ProductsMenuBSContent
 import com.diego.shoping_list.presentation.products.components.SwipeToActionBox
-import com.diego.shoping_list.presentation.shoppingList.ShoppingListFab
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListFab
 import com.diego.shoping_list.ui.theme.Dimens
 import kotlinx.coroutines.flow.Flow
 import org.koin.androidx.compose.koinViewModel

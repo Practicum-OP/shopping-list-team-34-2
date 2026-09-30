@@ -1,4 +1,4 @@
-package com.diego.shoping_list.presentation.shoppingList
+package com.diego.shoping_list.presentation.shoppingList.components
 
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon

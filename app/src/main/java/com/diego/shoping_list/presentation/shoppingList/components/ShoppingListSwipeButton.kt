@@ -1,4 +1,4 @@
-package com.diego.shoping_list.presentation.shoppingList
+package com.diego.shoping_list.presentation.shoppingList.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.size
