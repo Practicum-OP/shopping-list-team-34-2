@@ -17,12 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.ListIcon
 import com.diego.shoping_list.domain.ShoppingList
+import com.diego.shoping_list.domain.mapper.toImageVector
 import com.diego.shoping_list.ui.theme.Dimens
 
 @Composable
@@ -51,7 +51,7 @@ fun ShoppingListCard(
                 .padding(start = Dimens.spacingSmall, end = Dimens.screenPadding)
         ) {
             Image(
-                painter = painterResource(ListIcon.fromKey(shoppingList.iconKey).resId),
+                imageVector = ListIcon.fromKey(shoppingList.iconKey).toImageVector(),
                 contentDescription = stringResource(R.string.shopping_list_change_icon),
                 modifier = Modifier
                     .size(Dimens.listIconSize)

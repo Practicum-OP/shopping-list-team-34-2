@@ -18,8 +18,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import com.diego.shoping_list.domain.ListIcon
+import com.diego.shoping_list.domain.mapper.toImageVector
 import com.diego.shoping_list.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
@@ -50,7 +50,7 @@ fun ShoppingListIconSheet(
         ) {
             ListIcon.entries.forEach { icon ->
                 Image(
-                    painter = painterResource(icon.resId),
+                    imageVector = icon.toImageVector(),
                     contentDescription = null,
                     modifier = Modifier
                         .size(Dimens.iconPickerItemSize)

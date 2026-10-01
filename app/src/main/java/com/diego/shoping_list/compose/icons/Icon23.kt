@@ -39,7 +39,7 @@ fun Icon23(
                 close()
             }
         ) {
-            path(fill = SolidColor(Color(0xFFFEDDBD))) {
+            path(fill = SolidColor(containerColor)) {
                 moveTo(24f, 4f)
                 lineTo(24f, 4f)
                 arcTo(20f, 20f, 0f, isMoreThanHalf = false, isPositiveArc = true, 44f, 24f)
@@ -61,7 +61,7 @@ fun Icon23(
                 close()
             }
         ) {
-            path(fill = SolidColor(Color(0xFF281805))) {
+            path(fill = SolidColor(contentColor)) {
                 moveTo(24f, 29.5f)
                 curveTo(25.25f, 29.5f, 26.313f, 29.063f, 27.188f, 28.188f)
                 curveTo(28.063f, 27.313f, 28.5f, 26.25f, 28.5f, 25f)

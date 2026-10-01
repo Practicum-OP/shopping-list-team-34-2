@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.diego.shoping_list.domain.mapper.toImageVector
 
 @Composable
 fun IconPicker(
@@ -42,8 +42,8 @@ fun IconPicker(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Image(
-                        painter = painterResource(icon.resId),
-                        contentDescription = null,
+                        imageVector = icon.toImageVector(),
+                        contentDescription = icon.key,
                         modifier = Modifier.size(48.dp)
                     )
                 }
