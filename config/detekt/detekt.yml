@@ -3,6 +3,8 @@ complexity:
     active: true
     threshold: 50
     ignoreAnnotated: ['Composable']
+    excludes:
+      - '**/compose/icons/**'
   LongParameterList:
     active: true
     functionThreshold: 6
@@ -14,6 +16,10 @@ complexity:
     threshold: 350
   TooManyFunctions:
     active: false
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+    excludes: ['**/domain/mapper/ToImageVector.kt']
 
 style:
   MagicNumber:
