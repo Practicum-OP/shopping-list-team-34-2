@@ -30,13 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.diego.shoping_list.data.database.entities.ShoppingListEntity
 import com.diego.shoping_list.data.database.repository.ShoppingListRepository
 import com.diego.shoping_list.domain.IconPicker
 import com.diego.shoping_list.domain.ListIcon
+import com.diego.shoping_list.domain.mapper.toImageVector
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -168,8 +168,8 @@ fun TestDbScreen(
                             ) {
                                 val icon = ListIcon.fromKey(list.iconKey)
                                 Image(
-                                    painter = painterResource(icon.resId),
-                                    contentDescription = null,
+                                    imageVector = icon.toImageVector(),
+                                    contentDescription = icon.key,
                                     modifier = Modifier.size(40.dp)
                                 )
                                 Spacer(Modifier.width(12.dp))
@@ -241,8 +241,8 @@ fun TestDbScreen(
                         ) {
                             val icon = ListIcon.fromKey(list.iconKey)
                             Image(
-                                painter = painterResource(icon.resId),
-                                contentDescription = null,
+                                imageVector = icon.toImageVector(),
+                                contentDescription = icon.key,
                                 modifier = Modifier.size(40.dp)
                             )
                             Spacer(Modifier.width(12.dp))
