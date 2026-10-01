@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.detekt)
     id("com.google.devtools.ksp")
 }
 
@@ -35,6 +36,25 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+    parallel = true
+    ignoreFailures = false
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(false)
+        sarif.required.set(false)
+        md.required.set(false)
     }
 }
 

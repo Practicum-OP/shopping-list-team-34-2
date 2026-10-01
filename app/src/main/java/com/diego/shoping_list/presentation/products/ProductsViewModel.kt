@@ -64,75 +64,88 @@ class ProductsViewModel(
 
     fun onAddProductEvent(event: AddProductEvent) {
         when (event) {
-            is AddProductEvent.NameChange -> _uiState.update {
-                it.copy(addForm = it.addForm.copy(name = event.value, nameError = null))
-            }
-
-            is AddProductEvent.QuantityChange -> {
-                val digits = event.value
-                    .filter { it.isDigit() }
-                    .take(maxQuantity.toString().length)
-                _uiState.update {
-                    it.copy(addForm = it.addForm.copy(quantity = digits, quantityError = null))
-                }
-            }
-
-            is AddProductEvent.UnitChange -> _uiState.update {
-                it.copy(addForm = it.addForm.copy(unit = event.value))
-            }
-
-            is AddProductEvent.SuggestionSelected -> {
-                _uiState.update { state ->
-                    state.copy(
-                        addForm = state.addForm.copy(
-                            name = event.suggestion.name,
-                            unit = event.suggestion.defaultUnit
-                        )
-                    )
-                }
-            }
-
-            is AddProductEvent.EditProduct -> {
-                val fresh = _uiState.value.products.find { it.id == event.productId } ?: return
-                _uiState.update {
-                    it.copy(
-                        isAddSheetVisible = true,
-                        addForm = AddProductFormState(
-                            editingProduct = fresh,
-                            name = fresh.name,
-                            quantity = fresh.quantity.toString(),
-                            unit = fresh.unit
-                        )
-                    )
-                }
-            }
-
-            AddProductEvent.Increment -> _uiState.update { state ->
-                val current = state.addForm.quantity.toIntOrNull()
-                val next = when {
-                    current == null -> 1
-                    else -> (current + 1).coerceAtMost(maxQuantity)
-                }
-                state.copy(
-                    addForm = state.addForm.copy(
-                        quantity = next.toString(),
-                        quantityError = null
-                    )
-                )
-            }
-
-            AddProductEvent.Decrement -> _uiState.update { state ->
-                val current = state.addForm.quantity.toIntOrNull() ?: return@update state
-                val next = (current - 1).coerceIn(minQuantity, maxQuantity)
-                state.copy(addForm = state.addForm.copy(quantity = next.toString()))
-            }
-
+            is AddProductEvent.NameChange -> onNameChange(event.value)
+            is AddProductEvent.QuantityChange -> onQuantityChange(event.value)
+            is AddProductEvent.UnitChange -> onUnitChange(event.value)
+            is AddProductEvent.SuggestionSelected -> onSuggestionSelected(event.suggestion)
+            is AddProductEvent.EditProduct -> onEditProduct(event.productId)
+            AddProductEvent.Increment -> onIncrement()
+            AddProductEvent.Decrement -> onDecrement()
             AddProductEvent.Submit -> submitProduct()
-
-            AddProductEvent.Reset -> _uiState.update {
-                it.copy(addForm = AddProductFormState())
-            }
+            AddProductEvent.Reset -> onResetForm()
         }
+    }
+
+    private fun onNameChange(value: String) {
+        _uiState.update {
+            it.copy(addForm = it.addForm.copy(name = value, nameError = null))
+        }
+    }
+
+    private fun onQuantityChange(value: String) {
+        val digits = value
+            .filter { it.isDigit() }
+            .take(maxQuantity.toString().length)
+        _uiState.update {
+            it.copy(addForm = it.addForm.copy(quantity = digits, quantityError = null))
+        }
+    }
+
+    private fun onUnitChange(unit: String) {
+        _uiState.update {
+            it.copy(addForm = it.addForm.copy(unit = unit))
+        }
+    }
+
+    private fun onSuggestionSelected(suggestion: ProductSuggestion) {
+        _uiState.update { state ->
+            state.copy(
+                addForm = state.addForm.copy(
+                    name = suggestion.name,
+                    unit = suggestion.defaultUnit
+                )
+            )
+        }
+    }
+
+    private fun onEditProduct(productId: Long) {
+        val fresh = _uiState.value.products.find { it.id == productId } ?: return
+        _uiState.update {
+            it.copy(
+                isAddSheetVisible = true,
+                addForm = AddProductFormState(
+                    editingProduct = fresh,
+                    name = fresh.name,
+                    quantity = fresh.quantity.toString(),
+                    unit = fresh.unit
+                )
+            )
+        }
+    }
+
+    private fun onIncrement() {
+        _uiState.update { state ->
+            val current = state.addForm.quantity.toIntOrNull()
+            val next = if (current == null) 1 else (current + 1).coerceAtMost(maxQuantity)
+            state.copy(
+                addForm = state.addForm.copy(
+                    quantity = next.toString(),
+                    quantityError = null
+                )
+            )
+        }
+    }
+
+    private fun onDecrement() {
+        _uiState.update { state ->
+            val current = state.addForm.quantity.toIntOrNull() ?: return@update state
+            val next = (current - 1).coerceIn(minQuantity, maxQuantity)
+            state.copy(addForm = state.addForm.copy(quantity = next.toString()))
+        }
+    }
+
+    private fun onResetForm() {
+        _uiState.update { it.copy(addForm = AddProductFormState()) }
     }
 
     private fun submitProduct() {

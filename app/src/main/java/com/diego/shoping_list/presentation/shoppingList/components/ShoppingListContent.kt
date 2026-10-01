@@ -19,7 +19,9 @@ import androidx.compose.ui.res.stringResource
 import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.ShoppingList
 import com.diego.shoping_list.presentation.common.AppConfirmDialog
+import com.diego.shoping_list.presentation.common.ConfirmDialog
 import com.diego.shoping_list.presentation.common.DialogWindow
+import com.diego.shoping_list.presentation.common.AppDialogWindow
 import com.diego.shoping_list.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
@@ -30,7 +32,7 @@ fun ShoppingListContent(
     onIconClick: (Long) -> Unit,
     onDeleteConfirmed: (ShoppingList) -> Unit,
     onRenameConfirmed: (ShoppingList, String) -> Unit,
-    contentPadding: PaddingValues,
+    contentPadding: PaddingValues = PaddingValues(),
     modifier: Modifier = Modifier
 ) {
     var listToDelete by remember { mutableStateOf<ShoppingList?>(null) }
@@ -74,12 +76,14 @@ fun ShoppingListContent(
     }
 
     listToRename?.let { selectedList ->
-        DialogWindow(
-            title = stringResource(R.string.action_rename),
-            label = stringResource(R.string.shopping_edit_dialog),
-            confirmText = stringResource(R.string.action_rename),
-            dismissText = stringResource(R.string.cancel_dialog),
-            initialValue = selectedList.nameList,
+        AppDialogWindow(
+            DialogWindow(
+                title = stringResource(R.string.action_rename),
+                label = stringResource(R.string.shopping_edit_dialog),
+                confirmText = stringResource(R.string.action_rename),
+                dismissText = stringResource(R.string.cancel_dialog),
+                initialValue = selectedList.nameList,
+            ),
             onConfirm = { newName ->
                 onRenameConfirmed(selectedList, newName)
                 listToRename = null
@@ -93,9 +97,11 @@ fun ShoppingListContent(
 
     listToDelete?.let { selectedList ->
         AppConfirmDialog(
-            title = stringResource(R.string.delete_list, selectedList.nameList),
-            confirmText = stringResource(R.string.action_delete),
-            dismissText = stringResource(R.string.cancel_dialog),
+            ConfirmDialog(
+                title = stringResource(R.string.delete_list, selectedList.nameList),
+                confirmText = stringResource(R.string.action_delete),
+                dismissText = stringResource(R.string.cancel_dialog),
+            ),
             onConfirm = {
                 onDeleteConfirmed(selectedList)
                 listToDelete = null

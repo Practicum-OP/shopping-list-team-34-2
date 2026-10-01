@@ -1,0 +1,42 @@
+complexity:
+  LongMethod:
+    active: true
+    threshold: 50
+    ignoreAnnotated: ['Composable']
+  LongParameterList:
+    active: true
+    functionThreshold: 6
+    constructorThreshold: 7
+    ignoreDefaultParameters: true
+    ignoreDataClasses: true
+  LargeClass:
+    active: true
+    threshold: 350
+  TooManyFunctions:
+    active: false
+
+style:
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+  ReturnCount:
+    active: false
+  UnusedParameter:
+    active: false
+  WildcardImport:
+    active: false
+
+naming:
+  PackageNaming:
+    active: false
+  FunctionNaming:
+    active: false
+  ClassNaming:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
