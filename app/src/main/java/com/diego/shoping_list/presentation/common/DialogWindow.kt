@@ -2,6 +2,8 @@ package com.diego.shoping_list.presentation.common
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
@@ -14,11 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -44,7 +42,7 @@ fun AppDialogWindow(
     modifier: Modifier = Modifier,
     @DrawableRes iconResId: Int? = null
 ) {
-    var value by rememberSaveable { mutableStateOf(dialogWindow.initialValue) }
+    val value = rememberTextFieldState(initialText = dialogWindow.initialValue)
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -73,8 +71,7 @@ fun AppDialogWindow(
         },
         text = {
             OutlinedTextField(
-                value = value,
-                onValueChange = { value = it },
+                state = value,
                 label = {
                     Text(
                         text = dialogWindow.label,
@@ -84,7 +81,7 @@ fun AppDialogWindow(
                     )
                 },
                 placeholder = { Text(text = dialogWindow.hint) },
-                singleLine = true,
+                lineLimits = TextFieldLineLimits.SingleLine,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.secondary,
                     focusedLabelColor = MaterialTheme.colorScheme.secondary,
@@ -97,7 +94,7 @@ fun AppDialogWindow(
         },
         confirmButton = {
             TextButton(
-                onClick = { onConfirm(value) },
+                onClick = { onConfirm(value.text.toString()) },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.secondary
                 )
