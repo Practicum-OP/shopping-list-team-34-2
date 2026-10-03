@@ -21,6 +21,7 @@ import com.diego.shoping_list.presentation.common.AppDialogWindow
 import com.diego.shoping_list.ui.theme.Dimens
 
 @Composable
+@Suppress("LongParameterList")
 fun ShoppingListContent(
     shoppingLists: List<ShoppingList>,
     onShoppingListClick: (Long) -> Unit,
