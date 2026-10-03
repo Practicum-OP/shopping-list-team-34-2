@@ -1,6 +1,5 @@
 package com.diego.shoping_list.presentation.shoppingList.components
 
-import android.content.ClipData
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,11 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
 import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.ShoppingList
@@ -23,7 +19,6 @@ import com.diego.shoping_list.presentation.common.ConfirmDialog
 import com.diego.shoping_list.presentation.common.DialogWindow
 import com.diego.shoping_list.presentation.common.AppDialogWindow
 import com.diego.shoping_list.ui.theme.Dimens
-import kotlinx.coroutines.launch
 
 @Composable
 fun ShoppingListContent(
@@ -32,13 +27,12 @@ fun ShoppingListContent(
     onIconClick: (Long) -> Unit,
     onDeleteConfirmed: (ShoppingList) -> Unit,
     onRenameConfirmed: (ShoppingList, String) -> Unit,
+    onCopyClick: (ShoppingList) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
     modifier: Modifier = Modifier
 ) {
     var listToDelete by remember { mutableStateOf<ShoppingList?>(null) }
     var listToRename by remember { mutableStateOf<ShoppingList?>(null) }
-    val clipboard = LocalClipboard.current
-    val scope = rememberCoroutineScope()
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -56,11 +50,7 @@ fun ShoppingListContent(
                     listToRename = shoppingList
                 },
                 onCopyClick = {
-                    scope.launch {
-                        val clipData = ClipData.newPlainText("label", shoppingList.nameList)
-                        val clipEntry = ClipEntry(clipData)
-                        clipboard.setClipEntry(clipEntry)
-                    }
+                    onCopyClick(shoppingList)
                 },
                 onDeleteClick = {
                     listToDelete = shoppingList
