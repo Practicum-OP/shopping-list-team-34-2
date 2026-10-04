@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.diego.shoping_list.presentation.auth.AuthScreen
 import com.diego.shoping_list.presentation.products.ProductsScreen
 import com.diego.shoping_list.presentation.shoppingList.ShoppingListScreen
 import com.diego.shoping_list.presentation.start.StartScreen
@@ -18,8 +19,12 @@ fun AppNavGraph(
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.Start.route
+        startDestination = Screen.Auth.route
     ) {
+        composable(Screen.Auth.route) {
+            AuthScreen()
+        }
+
         composable(Screen.Start.route) {
             StartScreen(
                 onFinished = {
