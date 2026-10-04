@@ -8,6 +8,8 @@ interface ShoppingListRepository {
 
     suspend fun addList(name: String, iconKey: String): Result<Long>
 
+    suspend fun copyList(id: Long): Result<Long>
+
     suspend fun updateList(list: ShoppingListEntity): Result<Unit>
 
     suspend fun updateListIcon(id: Long, iconKey: String): Result<Unit>

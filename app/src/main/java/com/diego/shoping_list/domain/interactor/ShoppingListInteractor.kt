@@ -9,6 +9,8 @@ interface ShoppingListInteractor {
 
     suspend fun addList(name: String)
 
+    suspend fun copyList(list: ShoppingList): Result<Long>
+
     suspend fun changeListIcon(listId: Long, icon: ListIcon)
     suspend fun renameList(list: ShoppingList, name: String): Result<Unit>
     suspend fun deleteList(list: ShoppingList)

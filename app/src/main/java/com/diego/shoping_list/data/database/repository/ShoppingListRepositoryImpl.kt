@@ -48,6 +48,16 @@ class ShoppingListRepositoryImpl(
         }
     }
 
+    override suspend fun copyList(id: Long): Result<Long> {
+        return try {
+            Result.success(dao.copyList(id))
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun updateListIcon(id: Long, iconKey: String): Result<Unit> {
         return try {
             dao.updateIcon(id, iconKey)

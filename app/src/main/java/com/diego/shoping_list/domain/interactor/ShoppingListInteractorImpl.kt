@@ -26,6 +26,10 @@ class ShoppingListInteractorImpl(
         repository.updateListIcon(listId, icon.key)
     }
 
+    override suspend fun copyList(list: ShoppingList): Result<Long> {
+        return repository.copyList(list.id)
+    }
+
     override suspend fun renameList(list: ShoppingList, name: String): Result<Unit> {
         val normalizedName = name.trim().lowercase()
         if (normalizedName.isEmpty()) {
