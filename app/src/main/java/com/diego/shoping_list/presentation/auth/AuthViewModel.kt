@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diego.shoping_list.data.network.AuthRepository
 import com.diego.shoping_list.data.network.api.ApiResult
+import com.diego.shoping_list.data.network.model.AuthResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,8 @@ import kotlinx.coroutines.launch
 data class AuthUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isLoggedIn: Boolean = false
+    val isLoggedIn: Boolean = false,
+    val result: ApiResult<AuthResponse>? = null
 )
 
 class AuthViewModel(
@@ -28,7 +30,7 @@ class AuthViewModel(
         viewModelScope.launch {
             when (val result = repository.login(email, password)) {
                 is ApiResult.Success -> {
-                    _state.update { it.copy(isLoading = false, isLoggedIn = true) }
+                    _state.update { it.copy(isLoading = false, isLoggedIn = true, result = result) }
                 }
                 is ApiResult.ServerError -> {
                     _state.update { it.copy(isLoading = false, errorMessage = result.message) }

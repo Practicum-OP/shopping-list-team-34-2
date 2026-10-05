@@ -19,16 +19,20 @@ fun AppNavGraph(
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.Auth.route
+        startDestination = Screen.Start.route
     ) {
         composable(Screen.Auth.route) {
-            AuthScreen()
+            AuthScreen(onAuthResult = { success ->
+                if (success) navController.navigate(Screen.Main.route) {
+                    popUpTo(Screen.Auth.route) { inclusive = true }
+                }
+            })
         }
 
         composable(Screen.Start.route) {
             StartScreen(
                 onFinished = {
-                    navController.navigate(Screen.Main.route) {
+                    navController.navigate(Screen.Auth.route) {
                         popUpTo(Screen.Start.route) { inclusive = true }
                     }
                 }

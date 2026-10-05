@@ -1,5 +1,6 @@
 package com.diego.shoping_list.presentation.auth
 
+import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -26,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +35,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,10 +61,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.diego.shoping_list.compose.app_logo.AppLogo
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @Preview(name = "auth")
 @Composable
-fun AuthScreen() {
+fun AuthScreen(
+    viewModel: AuthViewModel = koinViewModel(),
+    onAuthResult: (Boolean) -> Unit = {}
+) {
+    val state by viewModel.state.collectAsState()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
@@ -151,7 +161,7 @@ fun AuthScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .onFocusChanged {state ->
+                    .onFocusChanged { state ->
                         if (state.isFocused) {
                             scope.launch {
                                 emailBringIntoView.bringIntoView()
@@ -167,6 +177,22 @@ fun AuthScreen() {
                     unfocusedTextColor = Color.Black,
                 ),
             )
+
+            Button(
+                onClick = {viewModel.login(email, password)},
+            ) {
+                Text("Login")
+            }
+
+            Text(state.result.toString())
+
+            LaunchedEffect(state) {
+                Log.d("TAG", "Result: ${state.result}\nisLoading: ${state.isLoading}" +
+                        "\nisLogginIn: ${state.isLoggedIn}")
+                if (state.isLoggedIn){
+                    onAuthResult(true)
+                }
+            }
         }
     }
 }
