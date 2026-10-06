@@ -3,22 +3,35 @@ package com.diego.shoping_list.presentation.products
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diego.shoping_list.data.database.repository.ProductInListRepository
+import com.diego.shoping_list.data.settings.SortModeRepository
+import com.diego.shoping_list.domain.SortMode
+import com.diego.shoping_list.domain.api.ProductInListInteractor
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
+import com.diego.shoping_list.presentation.products.stateitems.AddProductEvent
+import com.diego.shoping_list.presentation.products.stateitems.AddProductFormState
+import com.diego.shoping_list.presentation.products.stateitems.ProductsMenuEvent
+import com.diego.shoping_list.presentation.products.stateitems.ProductsUiState
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProductsViewModel(
     savedStateHandle: SavedStateHandle,
-    val repository: ProductInListRepository
+    private val interactor: ProductInListInteractor,
+    private val sortModeRepository: SortModeRepository
 ) : ViewModel() {
+
 
     private val listId: Long = savedStateHandle.get<Long>("listId") ?: 0L
 
@@ -28,21 +41,56 @@ class ProductsViewModel(
     private val minQuantity = 1
     private val maxQuantity = 999
 
+    private val orderChanges = MutableSharedFlow<List<Long>>(extraBufferCapacity = 1)
+
     init {
-        loadProducts()
+        observeProducts()
     }
 
-    private fun loadProducts() {
-        viewModelScope.launch {
-            repository.observeByList(listId).collectLatest { list ->
-                _uiState.update { it.copy(products = list) }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeProducts() {
+        sortModeRepository.sortMode(listId)
+            .flatMapLatest { mode ->
+                interactor.observeByList(listId, mode).map { it to mode }
             }
+            .onEach { (list, mode) ->
+                _uiState.update { state ->
+                    if (state.isDragging) {
+                        state.copy(sortMode = mode)
+                    } else {
+                        state.copy(products = list, sortMode = mode)
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun onDragStarted() {
+        _uiState.update { it.copy(isDragging = true) }
+    }
+
+    fun onDragStopped() {
+        val ids = _uiState.value.products.map { it.id }
+        _uiState.update { it.copy(isDragging = false) }
+        viewModelScope.launch {
+            interactor.saveOrder(listId, ids)
         }
+    }
+
+    fun onProductMove(from: Int, to: Int) {
+        if (!_uiState.value.isManualSortMode) return
+        val list = _uiState.value.products.toMutableList()
+        list.add(to, list.removeAt(from))
+        _uiState.update { it.copy(products = list) }
+    }
+
+    private fun onSortModeChange(mode: SortMode) {
+        viewModelScope.launch { sortModeRepository.save(listId, mode) }
     }
 
     fun suggestionsFor(query: String): Flow<List<ProductSuggestion>> =
         if (query.isBlank()) flowOf(emptyList())
-        else repository.observeSuggestions(query)
+        else interactor.observeSuggestions(query)
 
     fun onAddProductClick() {
         _uiState.update {
@@ -176,14 +224,14 @@ class ProductsViewModel(
         viewModelScope.launch {
             val editing = form.editingProduct
             if (editing == null) {
-                repository.addProduct(
+                interactor.addProduct(
                     listId = listId,
                     name = form.name,
                     quantity = qty!!,
                     unit = form.unit
                 )
             } else {
-                repository.updateProduct(
+                interactor.updateProduct(
                     editing.copy(
                         name = form.name,
                         quantity = qty!!,
@@ -204,7 +252,7 @@ class ProductsViewModel(
 
     fun onProductCheckedChange(product: Product, checked: Boolean) {
         viewModelScope.launch {
-            repository.updateChecked(product.id, checked)
+            interactor.updateChecked(product.id, checked)
         }
     }
 
@@ -249,7 +297,7 @@ class ProductsViewModel(
             ProductsMenuEvent.ConfirmDeleteAll -> {
                 _uiState.update { it.copy(isDeleteAllDialogVisible = false) }
                 viewModelScope.launch {
-                    repository.deleteAllInList(listId)
+                    interactor.deleteAllInList(listId)
                 }
             }
 
@@ -260,35 +308,31 @@ class ProductsViewModel(
             ProductsMenuEvent.ConfirmClearChecked -> {
                 _uiState.update { it.copy(isClearCheckedDialogVisible = false) }
                 viewModelScope.launch {
-                    repository.deleteCheckedInList(listId)
+                    interactor.deleteCheckedInList(listId)
                 }
             }
 
             ProductsMenuEvent.DismissClearCheckedDialog -> {
                 _uiState.update { it.copy(isClearCheckedDialogVisible = false) }
             }
+
+            ProductsMenuEvent.SortByAlphabet -> {
+                onSortModeChange(SortMode.ALPHABETICAL)
+                onDismissMenuProduct()
+            }
+
+            ProductsMenuEvent.SortByUser -> {
+                onSortModeChange(SortMode.MANUAL)
+                onDismissMenuProduct()
+            }
         }
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
-            repository.deleteProduct(product)
+            interactor.deleteProduct(product)
         }
     }
-}
 
-data class ProductsUiState(
-    val products: List<Product> = emptyList(),
-    val isAddSheetVisible: Boolean = false,
-    val isMenuSheetVisible: Boolean = false,
-    val isDeleteAllDialogVisible: Boolean = false,
-    val isClearCheckedDialogVisible: Boolean = false,
-    val addForm: AddProductFormState = AddProductFormState()
-) {
-    val isListEmpty: Boolean get() = products.isEmpty()
-    val hasCheckedItems: Boolean get() = products.any { it.isChecked }
-    val showEmptyPlaceholder: Boolean get() = products.isEmpty() && !isAddSheetVisible
 
-    val canClearChecked: Boolean get() = hasCheckedItems
-    val canDeleteAll: Boolean get() = !isListEmpty
 }

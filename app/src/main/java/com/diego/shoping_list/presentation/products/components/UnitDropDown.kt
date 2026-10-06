@@ -18,7 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.diego.shoping_list.presentation.products.productUnits
+import com.diego.shoping_list.domain.model.productUnits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
