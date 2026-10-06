@@ -14,7 +14,6 @@ import com.diego.shoping_list.presentation.products.stateitems.ProductsMenuEvent
 import com.diego.shoping_list.presentation.products.stateitems.ProductsUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,8 +39,6 @@ class ProductsViewModel(
 
     private val minQuantity = 1
     private val maxQuantity = 999
-
-    private val orderChanges = MutableSharedFlow<List<Long>>(extraBufferCapacity = 1)
 
     init {
         observeProducts()

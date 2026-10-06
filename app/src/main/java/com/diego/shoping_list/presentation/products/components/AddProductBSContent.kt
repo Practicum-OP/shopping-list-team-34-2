@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.diego.shoping_list.R
+import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
 import com.diego.shoping_list.presentation.products.stateitems.AddProductEvent
 import com.diego.shoping_list.presentation.products.stateitems.AddProductFormState
@@ -68,10 +69,7 @@ fun AddProductBottomSheetContent(
 
     LaunchedEffect(state.name, state.editingProduct?.id) {
         val q = state.name
-        if (q.isBlank() ||
-            (state.editingProduct != null && q == state.editingProduct.name) ||
-            q == lastSelected
-        ) {
+        if (shouldSkipSearch(q, state.editingProduct, lastSelected)) {
             suggestions = emptyList()
             showSuggestions = false
             return@LaunchedEffect
@@ -218,6 +216,15 @@ fun AddProductBottomSheetContent(
         }
     }
 }
+
+private fun shouldSkipSearch(
+    query: String,
+    editingProduct: Product?,
+    lastSelected: String?
+): Boolean =
+    query.isBlank() ||
+            query == editingProduct?.name ||
+            query == lastSelected
 
 private val SUGGESTION_ITEM_HEIGHT = 48.dp
 private val MENU_VERTICAL_MARGIN = 8.dp

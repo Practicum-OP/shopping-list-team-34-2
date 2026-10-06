@@ -88,14 +88,16 @@ fun ProductsScreen(
                 uiState.isManualSortMode -> {
                     ReorderableProductList(
                         products = uiState.products,
-                        onMove = { from, to -> viewModel.onProductMove(from, to) },
-                        onDragStarted = viewModel::onDragStarted,
-                        onDragStopped = viewModel::onDragStopped,
-                        onEdit = { product ->
-                            viewModel.onAddProductEvent(AddProductEvent.EditProduct(product.id))
-                        },
-                        onDelete = viewModel::deleteProduct,
-                        onToggleChecked = viewModel::onProductCheckedChange
+                        actions = ReorderableProductListActions(
+                            onMove = { from, to -> viewModel.onProductMove(from, to) },
+                            onDragStarted = viewModel::onDragStarted,
+                            onDragStopped = viewModel::onDragStopped,
+                            onEdit = { product ->
+                                viewModel.onAddProductEvent(AddProductEvent.EditProduct(product.id))
+                            },
+                            onDelete = viewModel::deleteProduct,
+                            onToggleChecked = viewModel::onProductCheckedChange
+                        )
                     )
                 }
 
@@ -214,18 +216,13 @@ private fun ShowProductList(
 @Composable
 private fun ReorderableProductList(
     products: List<Product>,
-    onMove: (from: Int, to: Int) -> Unit,
-    onDragStarted: () -> Unit,
-    onDragStopped: () -> Unit,
-    onEdit: (Product) -> Unit,
-    onDelete: (Product) -> Unit,
-    onToggleChecked: (Product, Boolean) -> Unit
+    actions: ReorderableProductListActions
 ) {
     val haptic = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
 
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        onMove(from.index, to.index)
+        actions.onMove(from.index, to.index)
         haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
     }
 
@@ -236,8 +233,8 @@ private fun ReorderableProductList(
         items(products, key = { it.id }) { product ->
             ReorderableItem(reorderableState, key = product.id) {
                 SwipeToActionBox(
-                    onSwipeStartToEnd = { onEdit(product) },
-                    onSwipeEndToStart = { onDelete(product) },
+                    onSwipeStartToEnd = { actions.onEdit(product) },
+                    onSwipeEndToStart = { actions.onDelete(product) },
                     startIcon = R.drawable.ic_search,
                     endIcon = R.drawable.ic_delete,
                     modifier = Modifier.animateItem(
@@ -248,15 +245,15 @@ private fun ReorderableProductList(
                 ) {
                     ProductItem(
                         product = product,
-                        onToggleChecked = { checked -> onToggleChecked(product, checked) },
+                        onToggleChecked = { checked -> actions.onToggleChecked(product, checked) },
                         dragHandleModifier = Modifier.draggableHandle(
                             onDragStarted = {
                                 haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                onDragStarted()
+                                actions.onDragStarted()
                             },
                             onDragStopped = {
                                 haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                onDragStopped()
+                                actions.onDragStopped()
                             }
                         ),
                         dragHandleEnable = true
@@ -311,4 +308,14 @@ private fun ProductsMenuBottomSheet(
         )
     }
 }
+
+
+data class ReorderableProductListActions(
+    val onMove: (from: Int, to: Int) -> Unit,
+    val onDragStarted: () -> Unit,
+    val onDragStopped: () -> Unit,
+    val onEdit: (Product) -> Unit,
+    val onDelete: (Product) -> Unit,
+    val onToggleChecked: (Product, Boolean) -> Unit
+)
 
