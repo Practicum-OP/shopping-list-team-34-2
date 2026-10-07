@@ -8,20 +8,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -30,8 +29,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun RegistrationScreen(
     viewModel: AuthViewModel,
-    onAuthResult: (Boolean) -> Unit = {},
-    onBackToLogin: () -> Unit = {},
     nameScreen: String = "Регистрация",
     userInstructions: String = "Создайте ваш аккаунт",
 ) {
@@ -51,12 +48,10 @@ fun RegistrationScreen(
     ) {
         StaticHeader(nameScreen, userInstructions)
 
-        val focusRequester = remember { FocusRequester() }
         val focusManager = LocalFocusManager.current
 
         EmailEditor(
             viewModel = viewModel,
-            focusRequester = focusRequester,
             focusManager = focusManager,
             state = state,
         )
@@ -72,6 +67,7 @@ fun RegistrationScreen(
                 keyboardController?.hide()
                 if (state.passwordError == null && state.password.isNotBlank()) {
                     viewModel.register(state.email, state.password)
+                    viewModel.setScreen(AuthScreens.LOGIN)
                 }
             },
             shape = RoundedCornerShape(10.dp),
@@ -80,7 +76,16 @@ fun RegistrationScreen(
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp),
         ) {
-            Text("Зарегистрироваться")
+            if (!state.isLoading) {
+                Text("Зарегистрироваться")
+            } else {
+                CircularProgressIndicator(
+                    color = Color(0xFFA370EE),
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            }
+
         }
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
@@ -88,19 +93,7 @@ fun RegistrationScreen(
             Text(
                 text = "Войти",
                 color = Color.Blue,
-                modifier = Modifier.clickable { onBackToLogin() },
-            )
-        }
-
-        LaunchedEffect(state.isLoggedIn) {
-            if (state.isLoggedIn) onAuthResult(true)
-        }
-
-        state.errorMessage?.let { message ->
-            Text(
-                text = message,
-                color = Color.Red,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.clickable { viewModel.setScreen(AuthScreens.LOGIN) },
             )
         }
     }

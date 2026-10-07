@@ -20,6 +20,7 @@ data class AuthUiState(
     val password: String = "",
     val emailError: String? = null,
     val passwordError: String? = null,
+    val screen: AuthScreens = AuthScreens.LOGIN
 )
 
 class AuthViewModel(
@@ -64,6 +65,10 @@ class AuthViewModel(
         }
     }
 
+    fun setScreen(screen: AuthScreens) {
+        _state.update { it.copy(screen = screen) }
+    }
+
     fun setEmail(email: String) = _state.update { it.copy(email = email, errorMessage = null) }
 
     fun setEmailError(error: String?) = _state.update { it.copy(emailError = error) }
@@ -75,4 +80,9 @@ class AuthViewModel(
     fun clearErrors() = _state.update {
         it.copy(emailError = null, passwordError = null, errorMessage = null)
     }
+}
+
+enum class AuthScreens() {
+    REGISTRATION,
+    LOGIN
 }

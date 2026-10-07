@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,12 +30,15 @@ import androidx.compose.ui.unit.dp
 private val AccentColor = Color(0xFFA370EE)
 private val MutedBorderColor = Color.LightGray
 private const val MIN_PASSWORD_LENGTH = 7
+
 @Composable
 fun PasswordEditor(
     viewModel: AuthViewModel,
     state: AuthUiState,
     singlePasswordMode: Boolean = false,
 ) {
+    val focusManager = LocalFocusManager.current
+
     if (singlePasswordMode) {
         val keyboardController = LocalSoftwareKeyboardController.current
         SinglePasswordField(
@@ -43,7 +47,12 @@ fun PasswordEditor(
                 viewModel.setPassword(it)
                 if (state.passwordError != null) viewModel.setPasswordError(null)
             },
-            onDone = { keyboardController?.hide() },
+            onDone = {
+                if (state.password.length >= MIN_PASSWORD_LENGTH) {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                }
+            },
             isError = state.passwordError != null,
             supportingText = state.passwordError,
         )
@@ -60,6 +69,7 @@ fun PasswordEditor(
             passwordSecond != passwordFirst -> "Пароли не совпадают"
             passwordFirst.length < MIN_PASSWORD_LENGTH ->
                 "Пароль должен быть не короче $MIN_PASSWORD_LENGTH символов"
+
             else -> null
         }
         viewModel.setPasswordError(error)
@@ -69,7 +79,6 @@ fun PasswordEditor(
         value = passwordFirst,
         onValueChange = { value ->
             passwordFirst = value
-            viewModel.setPassword(value)
             validate()
         },
         label = "Password",
@@ -86,8 +95,9 @@ fun PasswordEditor(
         imeAction = ImeAction.Done,
         onDone = {
             keyboardController?.hide()
-            if (state.passwordError == null && passwordFirst.isNotBlank()) {
-                viewModel.register(state.email, passwordFirst)
+            focusManager.clearFocus()
+            if (passwordFirst == passwordSecond && state.emailError == null) {
+                viewModel.setPassword(passwordFirst)
             }
         },
         isError = state.passwordError != null,

@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
@@ -25,7 +24,6 @@ private val MutedBorderColor = Color.LightGray
 @Composable
 fun EmailEditor(
     viewModel: AuthViewModel,
-    focusRequester: FocusRequester,
     focusManager: FocusManager,
     state: AuthUiState,
 ) {
@@ -62,6 +60,8 @@ fun EmailEditor(
             .onFocusChanged { focusState ->
                 if (!focusState.isFocused && state.email.isNotBlank() && !isValidEmail) {
                     viewModel.setEmailError("Некорректный email")
+                } else {
+                    viewModel.setEmailError(null)
                 }
             },
         colors = OutlinedTextFieldDefaults.colors(
