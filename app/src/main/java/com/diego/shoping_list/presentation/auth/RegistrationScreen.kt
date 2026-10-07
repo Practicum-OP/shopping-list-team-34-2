@@ -67,7 +67,6 @@ fun RegistrationScreen(
                 keyboardController?.hide()
                 if (state.passwordError == null && state.password.isNotBlank()) {
                     viewModel.register(state.email, state.password)
-                    viewModel.setScreen(AuthScreens.LOGIN)
                 }
             },
             shape = RoundedCornerShape(10.dp),

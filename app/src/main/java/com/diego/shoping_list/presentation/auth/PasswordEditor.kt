@@ -90,15 +90,15 @@ fun PasswordEditor(
         onValueChange = { value ->
             passwordSecond = value
             validate()
+            if (passwordFirst == passwordSecond && state.emailError == null) {
+                viewModel.setPassword(passwordFirst)
+            }
         },
         label = "Repeat password",
         imeAction = ImeAction.Done,
         onDone = {
             keyboardController?.hide()
             focusManager.clearFocus()
-            if (passwordFirst == passwordSecond && state.emailError == null) {
-                viewModel.setPassword(passwordFirst)
-            }
         },
         isError = state.passwordError != null,
         supportingText = state.passwordError,

@@ -32,7 +32,10 @@ class AuthViewModel(
 
     fun login(email: String, password: String) = submit { repository.login(email, password) }
 
-    fun register(email: String, password: String) = submit { repository.register(email, password) }
+    fun register(email: String, password: String) {
+        if (_state.value.isLoggedIn) return
+        submit { repository.register(email, password) }
+    }
 
     private fun submit(request: suspend () -> ApiResult<AuthResponse>) {
         _state.update { it.copy(isLoading = true, errorMessage = null) }
@@ -44,6 +47,8 @@ class AuthViewModel(
                         isLoading = false,
                         isLoggedIn = true,
                         result = result,
+                        screen = AuthScreens.LOGIN,
+                        errorMessage = "Аккаунт зарегестрирован!"
                     )
                     is ApiResult.ServerError -> current.copy(
                         isLoading = false,
