@@ -35,23 +35,30 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.diego.shoping_list.compose.app_logo.AppLogo
+import com.diego.shoping_list.data.network.model.AuthResponse
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AuthScreen(
     viewModel: AuthViewModel = koinViewModel(),
-    onAuthResult: (Boolean) -> Unit = {},
+    onAuthSuccess: (AuthResponse) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(
-                message = message,
-                withDismissAction = true,
-                duration = SnackbarDuration.Short,
-            )
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is AuthEffect.ShowSnackbar ->
+                    snackbarHostState.showSnackbar(
+                        message = effect.message,
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Short,
+                    )
+
+                is AuthEffect.NavigateToMain ->
+                    onAuthSuccess(effect.auth)
+            }
         }
     }
 
@@ -69,13 +76,8 @@ fun AuthScreen(
         )
 
         when (state.screen) {
-            AuthScreens.REGISTRATION -> RegistrationScreen(
-                viewModel = viewModel
-            )
-            AuthScreens.LOGIN -> LoginScreen(
-                viewModel = viewModel,
-                onAuthResult = onAuthResult
-            )
+            AuthScreens.LOGIN -> LoginScreen(state = state, onIntent = viewModel::onIntent)
+            AuthScreens.REGISTRATION -> RegistrationScreen(state = state, onIntent = viewModel::onIntent)
         }
     }
 }

@@ -13,11 +13,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -29,80 +26,55 @@ import androidx.compose.ui.unit.dp
 
 private val AccentColor = Color(0xFFA370EE)
 private val MutedBorderColor = Color.LightGray
-private const val MIN_PASSWORD_LENGTH = 7
 
 @Composable
 fun PasswordEditor(
-    viewModel: AuthViewModel,
-    state: AuthUiState,
+    state: AuthState,
+    onIntent: (AuthIntent) -> Unit,
     singlePasswordMode: Boolean = false,
 ) {
     val focusManager = LocalFocusManager.current
-
-    if (singlePasswordMode) {
-        val keyboardController = LocalSoftwareKeyboardController.current
-        SinglePasswordField(
-            value = state.password,
-            onValueChange = {
-                viewModel.setPassword(it)
-                if (state.passwordError != null) viewModel.setPasswordError(null)
-            },
-            onDone = {
-                if (state.password.length >= MIN_PASSWORD_LENGTH) {
-                    focusManager.clearFocus()
-                    keyboardController?.hide()
-                }
-            },
-            isError = state.passwordError != null,
-            supportingText = state.passwordError,
-        )
-        return
-    }
-
-    var passwordFirst by remember { mutableStateOf("") }
-    var passwordSecond by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    fun validate() {
-        val error = when {
-            passwordSecond.isEmpty() -> null
-            passwordSecond != passwordFirst -> "Пароли не совпадают"
-            passwordFirst.length < MIN_PASSWORD_LENGTH ->
-                "Пароль должен быть не короче $MIN_PASSWORD_LENGTH символов"
-
-            else -> null
-        }
-        viewModel.setPasswordError(error)
-    }
-
     SinglePasswordField(
-        value = passwordFirst,
-        onValueChange = { value ->
-            passwordFirst = value
-            validate()
-        },
+        value = state.password,
+        onValueChange = { onIntent(AuthIntent.PasswordChanged(it)) },
         label = "Password",
-        imeAction = ImeAction.Next,
-    )
-
-    SinglePasswordField(
-        value = passwordSecond,
-        onValueChange = { value ->
-            passwordSecond = value
-            validate()
-            if (passwordFirst == passwordSecond && state.emailError == null) {
-                viewModel.setPassword(passwordFirst)
+        imeAction = if (singlePasswordMode) ImeAction.Done else ImeAction.Next,
+        onDone = {
+            if (singlePasswordMode) {
+                focusManager.clearFocus()
+                keyboardController?.hide()
             }
         },
-        label = "Repeat password",
-        imeAction = ImeAction.Done,
-        onDone = {
-            keyboardController?.hide()
-            focusManager.clearFocus()
+        isVisible = state.isPasswordVisible,
+        onToggleVisibility = { onIntent(AuthIntent.TogglePasswordVisibility) },
+        isError = state.passwordError != null && singlePasswordMode,
+        supportingText = if (singlePasswordMode) state.passwordError else null,
+        onFocusChanged = { isFocused ->
+            onIntent(AuthIntent.PasswordFocusChanged(isFocused))
         },
-        isError = state.passwordError != null,
-        supportingText = state.passwordError,
     )
+
+    if (!singlePasswordMode) {
+        SinglePasswordField(
+            value = state.confirmPassword,
+            onValueChange = { onIntent(AuthIntent.ConfirmPasswordChanged(it)) },
+            label = "Repeat password",
+            imeAction = ImeAction.Done,
+            onDone = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            },
+            isVisible = state.isPasswordVisible,
+            onToggleVisibility = { onIntent(AuthIntent.TogglePasswordVisibility) },
+            isError = state.passwordError != null,
+            supportingText = state.passwordError,
+            onFocusChanged = { isFocused ->
+                onIntent(AuthIntent.PasswordFocusChanged(isFocused))
+            },
+        )
+    }
 }
 
 @Composable
@@ -112,17 +84,18 @@ private fun SinglePasswordField(
     label: String = "Password",
     imeAction: ImeAction = ImeAction.Done,
     onDone: (() -> Unit)? = null,
+    isVisible: Boolean,
+    onToggleVisibility: () -> Unit,
     isError: Boolean = false,
     supportingText: String? = null,
+    onFocusChanged: (Boolean) -> Unit = {},
 ) {
-    var visible by remember { mutableStateOf(false) }
-
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         singleLine = true,
-        visualTransformation = if (visible) {
+        visualTransformation = if (isVisible) {
             VisualTransformation.None
         } else {
             PasswordVisualTransformation()
@@ -135,17 +108,20 @@ private fun SinglePasswordField(
         isError = isError,
         supportingText = supportingText?.let { { Text(it) } },
         trailingIcon = {
-            IconButton(onClick = { visible = !visible }) {
+            IconButton(onClick = onToggleVisibility) {
                 Icon(
-                    imageVector = if (visible) Icons.Filled.Visibility
+                    imageVector = if (isVisible) Icons.Filled.Visibility
                     else Icons.Filled.VisibilityOff,
-                    contentDescription = if (visible) "Скрыть пароль" else "Показать пароль",
+                    contentDescription = if (isVisible) "Скрыть пароль" else "Показать пароль",
                 )
             }
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .onFocusChanged { focusState ->
+                onFocusChanged(focusState.isFocused)
+            },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = AccentColor,
             unfocusedBorderColor = MutedBorderColor,

@@ -21,14 +21,6 @@ fun AppNavGraph(
         navController = navController,
         startDestination = Screen.Start.route
     ) {
-        composable(Screen.Auth.route) {
-            AuthScreen(onAuthResult = { success ->
-                if (success) navController.navigate(Screen.Main.route) {
-                    popUpTo(Screen.Auth.route) { inclusive = true }
-                }
-            })
-        }
-
         composable(Screen.Start.route) {
             StartScreen(
                 onFinished = {
@@ -38,6 +30,15 @@ fun AppNavGraph(
                 }
             )
         }
+
+        composable(Screen.Auth.route) {
+            AuthScreen(onAuthSuccess = {
+                navController.navigate(Screen.Main.route) {
+                    popUpTo(Screen.Auth.route) { inclusive = true }
+                }
+            })
+        }
+
         composable(Screen.Main.route) {
             ShoppingListScreen(
                 isDarkTheme = isDarkTheme,

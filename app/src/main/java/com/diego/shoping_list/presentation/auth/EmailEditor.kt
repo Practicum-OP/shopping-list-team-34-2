@@ -1,6 +1,5 @@
 package com.diego.shoping_list.presentation.auth
 
-import android.util.Patterns
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,19 +22,13 @@ private val MutedBorderColor = Color.LightGray
 
 @Composable
 fun EmailEditor(
-    viewModel: AuthViewModel,
+    state: AuthState,
+    onIntent: (AuthIntent) -> Unit,
     focusManager: FocusManager,
-    state: AuthUiState,
 ) {
-    val isValidEmail = state.email.isNotBlank() &&
-            Patterns.EMAIL_ADDRESS.matcher(state.email).matches()
-
     OutlinedTextField(
         value = state.email,
-        onValueChange = { value ->
-            viewModel.setEmail(value)
-            if (state.emailError != null) viewModel.setEmailError(null)
-        },
+        onValueChange = { onIntent(AuthIntent.EmailChanged(it)) },
         label = { Text("Email") },
         singleLine = true,
         keyboardOptions = KeyboardOptions(
@@ -43,26 +36,15 @@ fun EmailEditor(
             imeAction = ImeAction.Next,
         ),
         keyboardActions = KeyboardActions(
-            onNext = {
-                if (isValidEmail) {
-                    viewModel.setEmailError(null)
-                    focusManager.moveFocus(FocusDirection.Down)
-                } else {
-                    viewModel.setEmailError("Некорректный email")
-                }
-            }
+            onNext = { focusManager.moveFocus(FocusDirection.Down) }
         ),
         isError = state.emailError != null,
         supportingText = state.emailError?.let { { Text(it) } },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .onFocusChanged { focusState ->
-                if (!focusState.isFocused && state.email.isNotBlank() && !isValidEmail) {
-                    viewModel.setEmailError("Некорректный email")
-                } else {
-                    viewModel.setEmailError(null)
-                }
+            .onFocusChanged {
+                onIntent(AuthIntent.EmailFocusChanged(it.isFocused))
             },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = AccentColor,

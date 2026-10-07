@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -17,7 +16,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,12 +29,11 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
-    viewModel: AuthViewModel,
+    state: AuthState,
+    onIntent: (AuthIntent) -> Unit,
     nameScreen: String = "Вход",
     userInstructions: String = "Введите ваш email и пароль для входа",
-    onAuthResult: (Boolean) -> Unit,
 ) {
-    val state by viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier
@@ -53,15 +50,11 @@ fun LoginScreen(
 
         val focusManager = LocalFocusManager.current
 
-        EmailEditor(
-            viewModel = viewModel,
-            focusManager = focusManager,
-            state = state,
-        )
+        EmailEditor(state = state, onIntent = onIntent, focusManager = focusManager)
 
         PasswordEditor(
-            viewModel = viewModel,
             state = state,
+            onIntent = onIntent,
             singlePasswordMode = true,
         )
 
@@ -92,25 +85,12 @@ fun LoginScreen(
         }
 
         Button(
-            onClick = {
-                viewModel.login(state.email, state.password)
-                onAuthResult(state.isLoggedIn)
-            },
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 16.dp),
+            onClick = { onIntent(AuthIntent.Submit) },
+            enabled = state.isSubmitEnabled,
+            // ...
         ) {
-            if (!state.isLoading) {
-                Text("Вход")
-            } else {
-                CircularProgressIndicator(
-                    color = Color(0xFFA370EE),
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp
-                )
-            }
+            if (!state.isLoading) Text("Вход")
+            else CircularProgressIndicator(/* ... */)
         }
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
@@ -118,7 +98,9 @@ fun LoginScreen(
             Text(
                 text = "Регистрация",
                 color = Color.Blue,
-                modifier = Modifier.clickable { viewModel.setScreen(AuthScreens.REGISTRATION) },
+                modifier = Modifier.clickable {
+                    onIntent(AuthIntent.SwitchScreen(AuthScreens.REGISTRATION))
+                },
             )
         }
     }

@@ -16,8 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,11 +26,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun RegistrationScreen(
-    viewModel: AuthViewModel,
+    state: AuthState,
+    onIntent: (AuthIntent) -> Unit,
     nameScreen: String = "Регистрация",
     userInstructions: String = "Создайте ваш аккаунт",
 ) {
-    val state by viewModel.state.collectAsState()
+    val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
@@ -48,27 +47,25 @@ fun RegistrationScreen(
     ) {
         StaticHeader(nameScreen, userInstructions)
 
-        val focusManager = LocalFocusManager.current
-
         EmailEditor(
-            viewModel = viewModel,
-            focusManager = focusManager,
             state = state,
+            onIntent = onIntent,
+            focusManager = focusManager,
         )
 
         PasswordEditor(
-            viewModel = viewModel,
             state = state,
-            singlePasswordMode = false,
+            onIntent = onIntent,
+            singlePasswordMode = false, // два поля: пароль + подтверждение
         )
 
         Button(
             onClick = {
                 keyboardController?.hide()
-                if (state.passwordError == null && state.password.isNotBlank()) {
-                    viewModel.register(state.email, state.password)
-                }
+                focusManager.clearFocus()
+                onIntent(AuthIntent.Submit)
             },
+            enabled = state.isSubmitEnabled,
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,18 +78,20 @@ fun RegistrationScreen(
                 CircularProgressIndicator(
                     color = Color(0xFFA370EE),
                     modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }
-
         }
+
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
             Text("Уже есть аккаунт? ")
             Text(
                 text = "Войти",
                 color = Color.Blue,
-                modifier = Modifier.clickable { viewModel.setScreen(AuthScreens.LOGIN) },
+                modifier = Modifier.clickable {
+                    onIntent(AuthIntent.SwitchScreen(AuthScreens.LOGIN))
+                },
             )
         }
     }

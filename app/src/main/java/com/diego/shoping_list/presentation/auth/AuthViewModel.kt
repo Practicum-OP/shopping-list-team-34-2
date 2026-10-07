@@ -5,89 +5,81 @@ import androidx.lifecycle.viewModelScope
 import com.diego.shoping_list.data.network.AuthRepository
 import com.diego.shoping_list.data.network.api.ApiResult
 import com.diego.shoping_list.data.network.model.AuthResponse
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-data class AuthUiState(
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val isLoggedIn: Boolean = false,
-    val result: ApiResult<AuthResponse>? = null,
-    val email: String = "",
-    val password: String = "",
-    val emailError: String? = null,
-    val passwordError: String? = null,
-    val screen: AuthScreens = AuthScreens.LOGIN
-)
 
 class AuthViewModel(
     private val repository: AuthRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(AuthUiState())
-    val state: StateFlow<AuthUiState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(AuthState())
+    val state: StateFlow<AuthState> = _state.asStateFlow()
 
-    fun login(email: String, password: String) = submit { repository.login(email, password) }
+    private val _effects = Channel<AuthEffect>(Channel.BUFFERED)
+    val effects = _effects.receiveAsFlow()
 
-    fun register(email: String, password: String) {
-        if (_state.value.isLoggedIn) return
-        submit { repository.register(email, password) }
-    }
-
-    private fun submit(request: suspend () -> ApiResult<AuthResponse>) {
-        _state.update { it.copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch {
-            val result = request()
-            _state.update { current ->
-                when (result) {
-                    is ApiResult.Success -> current.copy(
-                        isLoading = false,
-                        isLoggedIn = true,
-                        result = result,
-                        screen = AuthScreens.LOGIN,
-                        errorMessage = "Аккаунт зарегестрирован!"
-                    )
-                    is ApiResult.ServerError -> current.copy(
-                        isLoading = false,
-                        errorMessage = result.message,
-                        result = result,
-                    )
-                    is ApiResult.NetworkError -> current.copy(
-                        isLoading = false,
-                        errorMessage = "Проверьте интернет",
-                        result = result,
-                    )
-                    is ApiResult.Unexpected -> current.copy(
-                        isLoading = false,
-                        errorMessage = "Что-то пошло не так",
-                        result = result,
-                    )
-                }
-            }
+    fun onIntent(intent: AuthIntent) {
+        when (intent) {
+            AuthIntent.Submit -> submit()
+            else -> _state.update { it.reduce(intent) }
         }
     }
 
-    fun setScreen(screen: AuthScreens) {
-        _state.update { it.copy(screen = screen) }
+    private fun submit() {
+        val current = _state.value
+        if (!current.isSubmitEnabled) return
+
+        _state.update { it.reduce(AuthIntent.Submit) }
+
+        viewModelScope.launch {
+            val result = when (current.screen) {
+                AuthScreens.LOGIN -> repository.login(current.email, current.password)
+                AuthScreens.REGISTRATION -> repository.register(current.email, current.password)
+            }
+            handleResult(result, current.screen)
+        }
     }
 
-    fun setEmail(email: String) = _state.update { it.copy(email = email, errorMessage = null) }
+    private suspend fun handleResult(
+        result: ApiResult<AuthResponse>,
+        screen: AuthScreens,
+    ) {
+        when (result) {
+            is ApiResult.Success -> {
+                if (screen == AuthScreens.LOGIN) {
+                    _state.update {
+                        it.copy(isLoading = false, generalError = null)
+                    }
+                    _effects.send(AuthEffect.NavigateToMain(result.data))
+                } else {
 
-    fun setEmailError(error: String?) = _state.update { it.copy(emailError = error) }
+                    _state.update {
+                        AuthState(
+                            screen = AuthScreens.LOGIN,
+                            email = it.email,
+                        )
+                    }
+                    _effects.send(
+                        AuthEffect.ShowSnackbar("Аккаунт зарегистрирован! Войдите.")
+                    )
+                }
+            }
 
-    fun setPassword(password: String) = _state.update { it.copy(password = password, errorMessage = null) }
+            is ApiResult.ServerError -> fail(result.message)
+            is ApiResult.NetworkError -> fail("Проверьте интернет")
+            is ApiResult.Unexpected -> fail("Что-то пошло не так")
+        }
+    }
 
-    fun setPasswordError(error: String?) = _state.update { it.copy(passwordError = error) }
-
-    fun clearErrors() = _state.update {
-        it.copy(emailError = null, passwordError = null, errorMessage = null)
+    private suspend fun fail(message: String) {
+        _state.update { it.copy(isLoading = false, generalError = message) }
+        _effects.send(AuthEffect.ShowSnackbar(message))
     }
 }
 
-enum class AuthScreens() {
-    REGISTRATION,
-    LOGIN
-}
+enum class AuthScreens { REGISTRATION, LOGIN }
