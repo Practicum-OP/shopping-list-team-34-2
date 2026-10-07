@@ -56,7 +56,7 @@ fun RegistrationScreen(
         PasswordEditor(
             state = state,
             onIntent = onIntent,
-            singlePasswordMode = false, // два поля: пароль + подтверждение
+            singlePasswordMode = false
         )
 
         Button(

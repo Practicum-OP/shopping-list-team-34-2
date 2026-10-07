@@ -4,11 +4,14 @@ import com.diego.shoping_list.data.network.api.ApiResult
 import com.diego.shoping_list.data.network.api.ApiService
 import com.diego.shoping_list.data.network.model.ApiError
 import com.diego.shoping_list.data.network.model.AuthRequest
-import com.diego.shoping_list.data.network.model.AuthResponse
-import com.diego.shoping_list.data.network.model.CheckResponse
 import com.diego.shoping_list.data.network.model.RecoveryRequest
 import com.diego.shoping_list.data.network.model.RefreshRequest
-import com.diego.shoping_list.data.network.model.RefreshResponse
+import com.diego.shoping_list.domain.mapper.toDomain
+import com.diego.shoping_list.domain.mapper.toSession
+import com.diego.shoping_list.domain.model.AuthError
+import com.diego.shoping_list.domain.model.AuthSession
+import com.diego.shoping_list.domain.model.DomainResult
+import com.diego.shoping_list.domain.repository.AuthRepository
 import com.google.gson.Gson
 import retrofit2.HttpException
 import java.io.IOException
@@ -17,21 +20,31 @@ class AuthRepositoryImpl(
     private val api: ApiService,
     private val gson: Gson
 ) : AuthRepository {
-    override suspend fun register(email: String, password: String): ApiResult<AuthResponse> =
-        safeCall { api.register(AuthRequest(email, password)) }
+    override suspend fun register(email: String, password: String): DomainResult<AuthSession> =
+        safeCall { api.register(AuthRequest(email, password)) }.toDomain { it.toSession() }
 
 
-    override suspend fun login(email: String, password: String ): ApiResult<AuthResponse> =
-        safeCall { api.login(AuthRequest(email, password)) }
+    override suspend fun login(email: String, password: String ): DomainResult<AuthSession> =
+        safeCall { api.login(AuthRequest(email, password)) }.toDomain { it.toSession() }
 
-    override suspend fun refresh(refreshToken: String): ApiResult<RefreshResponse> =
-        safeCall { api.refresh(RefreshRequest(refreshToken)) }
+    override suspend fun refresh(refreshToken: String): DomainResult<AuthSession> =
+        safeCall { api.refresh(RefreshRequest(refreshToken)) }.toDomain { it.toSession(userId = -1) }
 
-    override suspend fun check(): ApiResult<CheckResponse> =
-        safeCall { api.check() }
+    override suspend fun check(accessToken: String?): DomainResult<Boolean> =
+        when (val result = safeCall { api.check(accessToken) }) {
+            is ApiResult.Success -> DomainResult.Success(result.data.isValid)
+            is ApiResult.ServerError -> DomainResult.Failure(AuthError.Server(result.code, result.message))
+            is ApiResult.NetworkError -> DomainResult.Failure(AuthError.Network)
+            is ApiResult.Unexpected -> DomainResult.Failure(AuthError.Unknown)
+        }
 
-    override suspend fun recover(email: String): ApiResult<Unit> =
-        safeCall { api.recover(RecoveryRequest(email)) }
+    override suspend fun recover(email: String): DomainResult<Unit> =
+        when (val result = safeCall { api.recover(RecoveryRequest(email)) }) {
+            is ApiResult.Success -> DomainResult.Success(Unit)
+            is ApiResult.ServerError -> DomainResult.Failure(AuthError.Server(result.code, result.message))
+            is ApiResult.NetworkError -> DomainResult.Failure(AuthError.Network)
+            is ApiResult.Unexpected -> DomainResult.Failure(AuthError.Unknown)
+        }
 
 
     private suspend fun <T> safeCall(block: suspend () -> T): ApiResult<T> =

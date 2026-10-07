@@ -86,11 +86,10 @@ fun LoginScreen(
 
         Button(
             onClick = { onIntent(AuthIntent.Submit) },
-            enabled = state.isSubmitEnabled,
-            // ...
+            enabled = state.isSubmitEnabled
         ) {
             if (!state.isLoading) Text("Вход")
-            else CircularProgressIndicator(/* ... */)
+            else CircularProgressIndicator()
         }
 
         Row(modifier = Modifier.padding(top = 16.dp)) {

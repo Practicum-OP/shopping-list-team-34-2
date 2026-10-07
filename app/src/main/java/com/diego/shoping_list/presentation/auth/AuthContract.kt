@@ -1,7 +1,5 @@
 package com.diego.shoping_list.presentation.auth
 
-import com.diego.shoping_list.data.network.model.AuthResponse
-
 sealed interface AuthIntent {
     data class EmailChanged(val value: String) : AuthIntent
     data class PasswordChanged(val value: String) : AuthIntent
@@ -40,5 +38,5 @@ data class AuthState(
 
 sealed interface AuthEffect {
     data class ShowSnackbar(val message: String) : AuthEffect
-    data class NavigateToMain(val auth: AuthResponse) : AuthEffect
+    data object NavigateToMain : AuthEffect
 }

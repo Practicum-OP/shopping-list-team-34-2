@@ -22,7 +22,7 @@ interface ApiService {
     suspend fun refresh(@Body body: RefreshRequest): RefreshResponse
 
     @GET("auth/check")
-    suspend fun check(): CheckResponse
+    suspend fun check(accessToken: String?): CheckResponse
 
     @POST("auth/recovery")
     suspend fun recover(@Body email: RecoveryRequest)

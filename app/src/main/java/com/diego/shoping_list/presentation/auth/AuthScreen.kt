@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -35,13 +34,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.diego.shoping_list.compose.app_logo.AppLogo
-import com.diego.shoping_list.data.network.model.AuthResponse
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AuthScreen(
     viewModel: AuthViewModel = koinViewModel(),
-    onAuthSuccess: (AuthResponse) -> Unit = {},
+    onAuthSuccess: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -49,15 +47,8 @@ fun AuthScreen(
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {
-                is AuthEffect.ShowSnackbar ->
-                    snackbarHostState.showSnackbar(
-                        message = effect.message,
-                        withDismissAction = true,
-                        duration = SnackbarDuration.Short,
-                    )
-
-                is AuthEffect.NavigateToMain ->
-                    onAuthSuccess(effect.auth)
+                is AuthEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is AuthEffect.NavigateToMain -> onAuthSuccess()
             }
         }
     }

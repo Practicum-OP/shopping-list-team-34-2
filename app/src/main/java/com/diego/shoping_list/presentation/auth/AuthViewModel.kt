@@ -2,9 +2,10 @@ package com.diego.shoping_list.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diego.shoping_list.data.network.AuthRepository
-import com.diego.shoping_list.data.network.api.ApiResult
-import com.diego.shoping_list.data.network.model.AuthResponse
+import com.diego.shoping_list.domain.interactor.AuthInteractor
+import com.diego.shoping_list.domain.model.AuthError
+import com.diego.shoping_list.domain.model.AuthSession
+import com.diego.shoping_list.domain.model.DomainResult
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val repository: AuthRepository,
+    private val interactor: AuthInteractor,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthState())
@@ -38,24 +39,24 @@ class AuthViewModel(
 
         viewModelScope.launch {
             val result = when (current.screen) {
-                AuthScreens.LOGIN -> repository.login(current.email, current.password)
-                AuthScreens.REGISTRATION -> repository.register(current.email, current.password)
+                AuthScreens.LOGIN -> interactor.login(current.email, current.password)
+                AuthScreens.REGISTRATION -> interactor.register(current.email, current.password)
             }
             handleResult(result, current.screen)
         }
     }
 
     private suspend fun handleResult(
-        result: ApiResult<AuthResponse>,
+        result: DomainResult<AuthSession>,
         screen: AuthScreens,
     ) {
         when (result) {
-            is ApiResult.Success -> {
+            is DomainResult.Success -> {
                 if (screen == AuthScreens.LOGIN) {
                     _state.update {
                         it.copy(isLoading = false, generalError = null)
                     }
-                    _effects.send(AuthEffect.NavigateToMain(result.data))
+                    _effects.send(AuthEffect.NavigateToMain)
                 } else {
 
                     _state.update {
@@ -70,15 +71,21 @@ class AuthViewModel(
                 }
             }
 
-            is ApiResult.ServerError -> fail(result.message)
-            is ApiResult.NetworkError -> fail("Проверьте интернет")
-            is ApiResult.Unexpected -> fail("Что-то пошло не так")
+            is DomainResult.Failure -> fail(result.error.toMessage())
         }
     }
 
     private suspend fun fail(message: String) {
         _state.update { it.copy(isLoading = false, generalError = message) }
         _effects.send(AuthEffect.ShowSnackbar(message))
+    }
+
+    private fun AuthError.toMessage(): String = when (this) {
+        AuthError.InvalidCredentials -> "Неверный email или пароль"
+        AuthError.EmailAlreadyUsed -> "Этот email уже зарегистрирован"
+        AuthError.Network -> "Проверьте интернет"
+        is AuthError.Server -> message
+        AuthError.Unknown -> "Что-то пошло не так"
     }
 }
 
