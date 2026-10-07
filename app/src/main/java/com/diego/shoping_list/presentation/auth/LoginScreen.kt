@@ -94,7 +94,7 @@ fun LoginScreen(
         Button(
             onClick = {
                 viewModel.login(state.email, state.password)
-                onAuthResult(true)
+                onAuthResult(state.isLoggedIn)
             },
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
