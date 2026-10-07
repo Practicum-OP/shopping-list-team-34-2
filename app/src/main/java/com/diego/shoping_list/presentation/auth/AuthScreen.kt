@@ -28,19 +28,16 @@ import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.diego.shoping_list.compose.app_logo.AppLogo
 import org.koin.androidx.compose.koinViewModel
 
-@Preview(name = "auth")
 @Composable
 fun AuthScreen(
     viewModel: AuthViewModel = koinViewModel(),
-    onAuthResult: (Boolean) -> Unit = {}
+    onAuthResult: (Boolean) -> Unit = {},
 ) {
     var showRegistrationScreen by remember { mutableStateOf(false) }
 
@@ -48,54 +45,47 @@ fun AuthScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .imePadding()
+            .imePadding(),
     ) {
         BackgroundWithGlows()
 
-        if (!showRegistrationScreen) {
-            LoginScreen(
-                viewModel = viewModel,
-                onAuthResult = onAuthResult,
-                onRegistration = {
-                    showRegistrationScreen = true
-                },
-                nameScreen = "Вход",
-                userInstructions = "Введите ваш email и пароль для входа"
-            )
-        } else {
+        if (showRegistrationScreen) {
             RegistrationScreen(
                 viewModel = viewModel,
                 onAuthResult = onAuthResult,
-                onBackToLogin = {
-                    showRegistrationScreen = false
-                },
-                nameScreen = "Регистрация",
-                userInstructions = "Создайте ваш аккаунт"
+                onBackToLogin = { showRegistrationScreen = false },
+            )
+        } else {
+            LoginScreen(
+                viewModel = viewModel,
+                onAuthResult = onAuthResult,
+                onRegistration = { showRegistrationScreen = true },
             )
         }
-
     }
 }
 
 @Composable
 fun BackgroundWithGlows() {
-    val infinite = rememberInfiniteTransition()
+    val infinite = rememberInfiniteTransition(label = "glow_transition")
 
     val shift1 by infinite.animateFloat(
         initialValue = -40f,
         targetValue = 40f,
         animationSpec = infiniteRepeatable(
-            tween(3000, easing = LinearEasing),
-            RepeatMode.Reverse
-        )
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "shift1",
     )
     val shift2 by infinite.animateFloat(
         initialValue = 30f,
         targetValue = -30f,
         animationSpec = infiniteRepeatable(
-            tween(4000, easing = LinearEasing),
-            RepeatMode.Reverse
-        )
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "shift2",
     )
 
     Box(Modifier.fillMaxSize()) {
@@ -104,39 +94,37 @@ fun BackgroundWithGlows() {
             size = 600.dp,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .offset(x = (-100).dp + shift1.dp, y = (-150).dp + shift1.dp)
+                .offset(x = (-100).dp + shift1.dp, y = (-150).dp + shift1.dp),
         )
         GlowCircle(
             color = Color.Cyan,
             size = 600.dp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .offset(x = 100.dp + shift2.dp, y = 150.dp + shift2.dp)
+                .offset(x = 100.dp + shift2.dp, y = 150.dp + shift2.dp),
         )
     }
 }
 
 @Composable
-fun GlowCircle(color: Color, size: Dp, modifier: Modifier) {
+fun GlowCircle(color: Color, size: Dp, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .size(size)
             .blur(200.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
-            .background(color, CircleShape)
+            .background(color, CircleShape),
     )
 }
 
 @Composable
 fun StaticHeader(nameScreen: String, userInstructions: String) {
-    Image(
-        imageVector = AppLogo(),
-        contentDescription = AppLogo().name
-    )
+    val logo = AppLogo()
+    Image(imageVector = logo, contentDescription = logo.name)
     Text(
         text = nameScreen,
         modifier = Modifier.padding(top = 12.dp),
         fontSize = 32.sp,
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.Bold,
     )
     Text(
         text = userInstructions,
@@ -144,6 +132,5 @@ fun StaticHeader(nameScreen: String, userInstructions: String) {
         color = Color.DarkGray,
         fontSize = 12.sp,
         fontWeight = FontWeight.Medium,
-        letterSpacing = TextUnit.Unspecified
     )
 }

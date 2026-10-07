@@ -19,12 +19,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
+private val AccentColor = Color(0xFFA370EE)
+private val MutedBorderColor = Color.LightGray
+
 @Composable
 fun EmailEditor(
     viewModel: AuthViewModel,
     focusRequester: FocusRequester,
     focusManager: FocusManager,
-    state: AuthUiState
+    state: AuthUiState,
 ) {
     val isValidEmail = state.email.isNotBlank() &&
             Patterns.EMAIL_ADDRESS.matcher(state.email).matches()
@@ -39,17 +42,15 @@ fun EmailEditor(
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next
+            imeAction = ImeAction.Next,
         ),
         keyboardActions = KeyboardActions(
             onNext = {
-                if (!isValidEmail) {
-                    viewModel.setEmailError("Некорректный email")
-
-                    focusRequester.requestFocus()
-                } else {
+                if (isValidEmail) {
                     viewModel.setEmailError(null)
                     focusManager.moveFocus(FocusDirection.Down)
+                } else {
+                    viewModel.setEmailError("Некорректный email")
                 }
             }
         ),
@@ -64,10 +65,10 @@ fun EmailEditor(
                 }
             },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color(0xFFA370EE),
-            unfocusedBorderColor = Color.LightGray,
-            focusedLabelColor = Color(0xFFA370EE),
-            cursorColor = Color(0xFFA370EE),
+            focusedBorderColor = AccentColor,
+            unfocusedBorderColor = MutedBorderColor,
+            focusedLabelColor = AccentColor,
+            cursorColor = AccentColor,
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black,
         ),

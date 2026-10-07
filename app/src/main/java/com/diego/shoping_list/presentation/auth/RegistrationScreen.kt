@@ -26,15 +26,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RegistrationScreen(
+    viewModel: AuthViewModel,
     onAuthResult: (Boolean) -> Unit = {},
     onBackToLogin: () -> Unit = {},
-    viewModel: AuthViewModel = koinViewModel(),
-    nameScreen: String = "Registration",
-    userInstructions: String = "Create an account to continue"
+    nameScreen: String = "Регистрация",
+    userInstructions: String = "Создайте ваш аккаунт",
 ) {
     val state by viewModel.state.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -48,7 +47,7 @@ fun RegistrationScreen(
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White.copy(alpha = 0.6f)),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         StaticHeader(nameScreen, userInstructions)
 
@@ -59,17 +58,15 @@ fun RegistrationScreen(
             viewModel = viewModel,
             focusRequester = focusRequester,
             focusManager = focusManager,
-            state,
+            state = state,
         )
 
         PasswordEditor(
             viewModel = viewModel,
-            focusRequester = focusRequester,
-            focusManager = focusManager,
-            state,
+            state = state,
+            singlePasswordMode = false,
         )
 
-        // Кнопка регистрации
         Button(
             onClick = {
                 keyboardController?.hide()
@@ -81,29 +78,30 @@ fun RegistrationScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp)
+                .padding(top = 16.dp),
         ) {
-            Text("Sign Up")
+            Text("Зарегистрироваться")
         }
 
-        // Ссылка назад на логин
         Row(modifier = Modifier.padding(top = 16.dp)) {
-            Text("Already have an account? ")
+            Text("Уже есть аккаунт? ")
             Text(
-                text = "Log In",
+                text = "Войти",
                 color = Color.Blue,
-                modifier = Modifier.clickable { onBackToLogin() }
+                modifier = Modifier.clickable { onBackToLogin() },
             )
         }
 
-        // Реакция на результат регистрации
         LaunchedEffect(state.isLoggedIn) {
-            if (state.isLoggedIn) {
-                onAuthResult(true)
-            }
+            if (state.isLoggedIn) onAuthResult(true)
         }
 
-        //Здесь должен быть тоаст
-        Text(state.errorMessage.toString())
+        state.errorMessage?.let { message ->
+            Text(
+                text = message,
+                color = Color.Red,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
     }
 }

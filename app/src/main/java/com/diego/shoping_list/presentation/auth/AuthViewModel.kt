@@ -19,69 +19,60 @@ data class AuthUiState(
     val email: String = "",
     val password: String = "",
     val emailError: String? = null,
-    val passwordError: String = "",
+    val passwordError: String? = null,
 )
 
 class AuthViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthUiState())
     val state: StateFlow<AuthUiState> = _state.asStateFlow()
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String) = submit { repository.login(email, password) }
+
+    fun register(email: String, password: String) = submit { repository.register(email, password) }
+
+    private fun submit(request: suspend () -> ApiResult<AuthResponse>) {
         _state.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
-            when (val result = repository.login(email, password)) {
-                is ApiResult.Success -> {
-                    _state.update { it.copy(isLoading = false, isLoggedIn = true, result = result) }
-                }
-                is ApiResult.ServerError -> {
-                    _state.update { it.copy(isLoading = false, errorMessage = result.message) }
-                }
-                is ApiResult.NetworkError -> {
-                    _state.update { it.copy(isLoading = false, errorMessage = "Проверьте интернет") }
-                }
-                is ApiResult.Unexpected -> {
-                    _state.update { it.copy(isLoading = false, errorMessage = "Что-то пошло не так") }
+            val result = request()
+            _state.update { current ->
+                when (result) {
+                    is ApiResult.Success -> current.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        result = result,
+                    )
+                    is ApiResult.ServerError -> current.copy(
+                        isLoading = false,
+                        errorMessage = result.message,
+                        result = result,
+                    )
+                    is ApiResult.NetworkError -> current.copy(
+                        isLoading = false,
+                        errorMessage = "Проверьте интернет",
+                        result = result,
+                    )
+                    is ApiResult.Unexpected -> current.copy(
+                        isLoading = false,
+                        errorMessage = "Что-то пошло не так",
+                        result = result,
+                    )
                 }
             }
         }
     }
 
-    fun register(email: String, password: String) {
-        _state.update { it.copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch {
-            when (val result = repository.register(email, password)) {
-                is ApiResult.Success -> {
-                    _state.update { it.copy(isLoading = false, isLoggedIn = true, result = result) }
-                }
-                is ApiResult.ServerError -> {
-                    _state.update { it.copy(isLoading = false, errorMessage = result.message) }
-                }
-                is ApiResult.NetworkError -> {
-                    _state.update { it.copy(isLoading = false, errorMessage = "Проверьте интернет") }
-                }
-                is ApiResult.Unexpected -> {
-                    _state.update { it.copy(isLoading = false, errorMessage = "Что-то пошло не так") }
-                }
-            }
-        }
-    }
+    fun setEmail(email: String) = _state.update { it.copy(email = email, errorMessage = null) }
 
-    fun setEmail(email: String) {
-        _state.update {it.copy(email = email)}
-    }
+    fun setEmailError(error: String?) = _state.update { it.copy(emailError = error) }
 
-    fun setEmailError(emailError: String?) {
-        _state.update {it.copy(emailError = emailError)}
-    }
+    fun setPassword(password: String) = _state.update { it.copy(password = password, errorMessage = null) }
 
-    fun setPassword(password: String) {
-        _state.update { it.copy(password = password) }
-    }
+    fun setPasswordError(error: String?) = _state.update { it.copy(passwordError = error) }
 
-    fun setPasswordError(error: String?) {
-        _state.update { it.copy(passwordError = error ?: "") }
+    fun clearErrors() = _state.update {
+        it.copy(emailError = null, passwordError = null, errorMessage = null)
     }
 }
