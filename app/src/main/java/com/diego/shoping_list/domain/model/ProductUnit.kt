@@ -1,4 +1,4 @@
-package com.diego.shoping_list.presentation.products
+package com.diego.shoping_list.domain.model
 
 enum class ProductUnit(val label: String) {
     LITER("л"),

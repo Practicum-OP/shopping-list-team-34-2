@@ -6,5 +6,6 @@ data class Product(
     val name: String,
     val quantity: Int,
     val unit: String = "",
-    val isChecked: Boolean = false
+    val isChecked: Boolean = false,
+    val positionInList: Int
 )

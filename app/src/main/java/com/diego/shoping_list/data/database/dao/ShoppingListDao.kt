@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.diego.shoping_list.data.database.entities.ShoppingListEntity
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,28 @@ interface ShoppingListDao {
 
     @Insert
     suspend fun insert(list: ShoppingListEntity): Long
+
+    @Query("SELECT * FROM shopping_list_table WHERE id = :id")
+    suspend fun getById(id: Long): ShoppingListEntity?
+
+    @Query("""
+        INSERT INTO product_in_list_table (listId, name, quantity, unit, isChecked)
+        SELECT :targetListId, name, quantity, unit, isChecked
+        FROM product_in_list_table WHERE listId = :sourceListId
+    """)
+    suspend fun copyProducts(sourceListId: Long, targetListId: Long)
+
+    @Transaction
+    suspend fun copyList(id: Long): Long {
+        val source = requireNotNull(getById(id)) { "Список не найден" }
+        var copyName = "${source.nameList} (копия)"
+        while (existsByName(copyName)) {
+            copyName += " (копия)"
+        }
+        val copyId = insert(source.copy(id = 0, nameList = copyName))
+        copyProducts(sourceListId = id, targetListId = copyId)
+        return copyId
+    }
 
     @Update
     suspend fun update(list: ShoppingListEntity)

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.model.Product
@@ -24,32 +26,48 @@ import com.diego.shoping_list.domain.model.Product
 fun ProductItem(
     product: Product,
     onToggleChecked: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    dragHandleModifier: Modifier = Modifier,
+    dragHandleEnable: Boolean = false
 ) {
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+    Column(
+        modifier = Modifier
             .height(72.dp)
-            .clickable { onToggleChecked(!product.isChecked) },
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        CustomCheckbox(
-            checked = product.isChecked,
-            onCheckedChange = onToggleChecked
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = product.name,
-                style = MaterialTheme.typography.bodyLarge
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clickable { onToggleChecked(!product.isChecked) },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CustomCheckbox(
+                checked = product.isChecked,
+                onCheckedChange = onToggleChecked
             )
-            Text(
-                text = "${product.quantity} ${product.unit}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textDecoration = if (product.isChecked) TextDecoration.LineThrough else null
+                )
+                Text(
+                    text = "${product.quantity} ${product.unit}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (dragHandleEnable) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_drag_handle_24),
+                    contentDescription = "Drag to reorder",
+                    modifier = dragHandleModifier
+                )
+            }
         }
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outlineVariant
+        )
     }
 }
 

@@ -98,4 +98,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.navigation.compose)
+
+// Сортировка через drag and drop от Calvin-LL/Reoderable
+    implementation(libs.reorderable)
+
+//  DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }

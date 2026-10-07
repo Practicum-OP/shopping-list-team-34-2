@@ -14,13 +14,21 @@
     <string name="shopping_list_change_icon">Сменить иконку</string>
     <string name="shopping_list_delete_all_title">Удалить все списки?</string>
     <string name="shopping_list_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
-
-    <string name="product_screen_title">Продукты</string>
-    <string name="product_list_empty">В списке покупок пока пусто</string>
     <string name="shopping_title_dialog">Добавление списка</string>
     <string name="shopping_edit_dialog">Название списка</string>
     <string name="shopping_hint_dialog">Новый список</string>
     <string name="cancel_dialog">Отмена</string>
     <string name="create_dialog">Создать</string>
     <string name="delete_list">Удалить список\n«%1$s»?</string>
+
+    <string name="product_screen_title">Продукты</string>
+    <string name="products_menu_icon_description">Меню</string>
+    <string name="products_dialog_delete_all">Удалить все товары?</string>
+    <string name="products_dialog_clear_checked">Удалить все купленные товары?</string>
+    <string name="product_list_empty">В списке покупок пока пусто</string>
+    <string name="products_menu_sorting">Сортировка</string>
+    <string name="products_menu_sort_by_alphabet">По алфавиту</string>
+    <string name="products_menu_sort_by_user">Пользовательская</string>
+    <string name="products_menu_delete_all">Удалить все</string>
+    <string name="products_menu_clear_checked">Очистить купленные</string>
 </resources>

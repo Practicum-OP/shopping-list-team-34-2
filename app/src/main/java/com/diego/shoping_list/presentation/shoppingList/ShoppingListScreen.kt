@@ -62,6 +62,7 @@ fun ShoppingListScreen(
                 onIconClick = { listId -> iconSheetListId = listId },
                 onDeleteConfirmed = { list -> viewModel.deleteList(list) },
                 onRenameConfirmed = { list, name -> viewModel.renameList(list, name) },
+                onCopyClick = { list -> viewModel.copyList(list) },
                 contentPadding = innerPadding
             )
         }

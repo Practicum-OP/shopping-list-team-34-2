@@ -1,4 +1,4 @@
-package com.diego.shoping_list.presentation.products
+package com.diego.shoping_list.presentation.products.stateitems
 
 import com.diego.shoping_list.domain.model.ProductSuggestion
 

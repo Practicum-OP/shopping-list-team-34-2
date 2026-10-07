@@ -41,6 +41,12 @@ class ShoppingListViewModel(
         }
     }
 
+    fun copyList(list: ShoppingList) {
+        viewModelScope.launch {
+            interactor.copyList(list)
+        }
+    }
+
     fun renameList(list: ShoppingList, name: String) {
         viewModelScope.launch {
             interactor.renameList(list, name)

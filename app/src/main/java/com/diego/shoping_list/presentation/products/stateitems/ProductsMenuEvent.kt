@@ -1,4 +1,4 @@
-package com.diego.shoping_list.presentation.products
+package com.diego.shoping_list.presentation.products.stateitems
 
 sealed interface ProductsMenuEvent {
     data object Sorting : ProductsMenuEvent
@@ -8,4 +8,6 @@ sealed interface ProductsMenuEvent {
     data object DismissDeleteAllDialog : ProductsMenuEvent
     data object ConfirmClearChecked : ProductsMenuEvent
     data object DismissClearCheckedDialog : ProductsMenuEvent
+    data object SortByAlphabet : ProductsMenuEvent
+    data object SortByUser : ProductsMenuEvent
 }

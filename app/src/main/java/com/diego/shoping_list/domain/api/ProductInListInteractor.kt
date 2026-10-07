@@ -1,14 +1,13 @@
-package com.diego.shoping_list.data.database.repository
+package com.diego.shoping_list.domain.api
 
+import com.diego.shoping_list.domain.SortMode
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
 import kotlinx.coroutines.flow.Flow
 
-interface ProductInListRepository {
-
-    fun observeByList(listId: Long): Flow<List<Product>>
+interface ProductInListInteractor {
+    fun observeByList(listId: Long, sortMode: SortMode): Flow<List<Product>>
     fun observeAllProduct(): Flow<List<Product>>
-
     fun observeSuggestions(query: String): Flow<List<ProductSuggestion>>
 
     suspend fun addProduct(
@@ -27,4 +26,6 @@ interface ProductInListRepository {
     suspend fun deleteAllInList(listId: Long): Result<Unit>
 
     suspend fun deleteCheckedInList(listId: Long): Result<Unit>
+
+    suspend fun saveOrder(listId: Long, orderedIds: List<Long>): Result<Unit>
 }
