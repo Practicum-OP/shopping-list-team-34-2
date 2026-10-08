@@ -15,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
@@ -52,7 +51,7 @@ fun ShoppingListSwipeItem(
         scope.launch { swipeState.animateTo(SwipeMenuState.Closed) }
     }
 
-    Box(modifier = modifier.fillMaxWidth().clipToBounds()) {
+    Box(modifier = modifier.fillMaxWidth()) {
         if (swipeState.offset < 0f) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSmall, Alignment.End),

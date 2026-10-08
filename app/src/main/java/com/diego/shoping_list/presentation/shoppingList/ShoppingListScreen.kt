@@ -20,6 +20,7 @@ import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListC
 import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListEmptyState
 import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListFab
 import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListIconSheet
+import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListSearchScreen
 import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListTopBar
 import com.diego.shoping_list.presentation.shoppingList.state.UiState
 import com.diego.shoping_list.presentation.shoppingList.view_model.ShoppingListViewModel
@@ -37,13 +38,30 @@ fun ShoppingListScreen(
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
     var iconSheetListId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var isSearchActive by rememberSaveable { mutableStateOf(false) }
+
+    if (isSearchActive) {
+        val shoppingLists = when (val state = uiState) {
+            is UiState.Content -> state.shoppingLists
+            UiState.Empty -> emptyList()
+        }
+
+        ShoppingListSearchScreen(
+            shoppingLists = shoppingLists,
+            isDarkTheme = isDarkTheme,
+            onClose = { isSearchActive = false },
+            onShoppingListClick = onShoppingListClick,
+            modifier = modifier
+        )
+        return
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             ShoppingListTopBar(
                 isDarkTheme = isDarkTheme,
-                onSearchClick = {},
+                onSearchClick = { isSearchActive = true },
                 onDeleteClick = { showDeleteAllDialog = true },
                 onToggleTheme = onToggleTheme,
             )

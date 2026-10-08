@@ -12,7 +12,11 @@ object Dimens {
     val listIconSize = 40.dp
     val listItemHeight = 56.dp
     val cardCornerRadius = 12.dp
-    val cardElevation = 3.dp
+    val listCardSpacing = 16.dp
+    val searchBarHeight = 72.dp
+    val searchEmptyTopPadding = 32.dp
+    val searchIllustrationWidth = 284.dp
+    val searchIllustrationHeight = 238.dp
     val iconPickerItemSize = 48.dp
     val iconPickerSpacing = 16.dp
     val iconPickerBottomPadding = 24.dp
