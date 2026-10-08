@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.diego.shoping_list.presentation.auth.AuthScreen
 import com.diego.shoping_list.presentation.products.ProductsScreen
 import com.diego.shoping_list.presentation.shoppingList.ShoppingListScreen
 import com.diego.shoping_list.presentation.start.StartScreen
@@ -23,12 +24,21 @@ fun AppNavGraph(
         composable(Screen.Start.route) {
             StartScreen(
                 onFinished = {
-                    navController.navigate(Screen.Main.route) {
+                    navController.navigate(Screen.Auth.route) {
                         popUpTo(Screen.Start.route) { inclusive = true }
                     }
                 }
             )
         }
+
+        composable(Screen.Auth.route) {
+            AuthScreen(onAuthSuccess = {
+                navController.navigate(Screen.Main.route) {
+                    popUpTo(Screen.Auth.route) { inclusive = true }
+                }
+            })
+        }
+
         composable(Screen.Main.route) {
             ShoppingListScreen(
                 isDarkTheme = isDarkTheme,

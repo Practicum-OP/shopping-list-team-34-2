@@ -59,6 +59,13 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 }
 
 dependencies {
+// retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+// Шифрованное хранилище токенов
+    implementation("androidx.security:security-crypto:1.1.0")
+
 // view model
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -71,8 +78,9 @@ dependencies {
 
 //    di
     implementation(libs.koin.android)
-
     implementation(libs.koin.androidx.compose)
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
