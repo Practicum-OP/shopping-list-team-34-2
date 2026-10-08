@@ -40,10 +40,10 @@ fun ShoppingListContent(
         contentPadding = PaddingValues(
             start = Dimens.screenPadding,
             end = Dimens.screenPadding,
-            top = contentPadding.calculateTopPadding() + Dimens.spacingSmall,
+            top = contentPadding.calculateTopPadding() + Dimens.listCardSpacing,
             bottom = contentPadding.calculateBottomPadding() + Dimens.listBottomSpace
         ),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmall)
+        verticalArrangement = Arrangement.spacedBy(Dimens.listCardSpacing)
     ) {
         items(shoppingLists, key = { it.id }) { shoppingList ->
             ShoppingListSwipeItem(

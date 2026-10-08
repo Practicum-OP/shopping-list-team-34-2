@@ -3,6 +3,10 @@
 
     <string name="action_back">Назад</string>
     <string name="action_search">Поиск</string>
+    <string name="action_clear_search">Очистить поиск</string>
+    <string name="shopping_list_search_hint">Поиск списков</string>
+    <string name="shopping_list_search_not_found_title">Мы не смогли найти то,\nчто вы искали</string>
+    <string name="shopping_list_search_not_found_subtitle">Попробуйте изменить запрос\nили проверить написание</string>
     <string name="action_delete">Удалить</string>
     <string name="action_rename">Переименовать</string>
     <string name="action_copy">Копировать</string>
