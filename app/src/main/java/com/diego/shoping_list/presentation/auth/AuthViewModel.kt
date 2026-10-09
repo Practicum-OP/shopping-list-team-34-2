@@ -24,6 +24,15 @@ class AuthViewModel(
     private val _effects = Channel<AuthEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
+    init {
+        viewModelScope.launch {
+            val restored = interactor.restoreSession()
+            if (restored) {
+                _effects.send(AuthEffect.NavigateToMain)
+            }
+        }
+    }
+
     fun onIntent(intent: AuthIntent) {
         when (intent) {
             AuthIntent.Submit -> submit()
@@ -53,24 +62,15 @@ class AuthViewModel(
         when (result) {
             is DomainResult.Success -> {
                 if (screen == AuthScreens.LOGIN) {
-                    _state.update {
-                        it.copy(isLoading = false, generalError = null)
-                    }
+                    _state.update { it.copy(isLoading = false, generalError = null) }
                     _effects.send(AuthEffect.NavigateToMain)
                 } else {
-
                     _state.update {
-                        AuthState(
-                            screen = AuthScreens.LOGIN,
-                            email = it.email,
-                        )
+                        AuthState(screen = AuthScreens.LOGIN, email = it.email)
                     }
-                    _effects.send(
-                        AuthEffect.ShowSnackbar("Аккаунт зарегистрирован! Войдите.")
-                    )
+                    _effects.send(AuthEffect.ShowSnackbar("Аккаунт зарегистрирован! Войдите."))
                 }
             }
-
             is DomainResult.Failure -> fail(result.error.toMessage())
         }
     }

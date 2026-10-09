@@ -59,6 +59,15 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 }
 
 dependencies {
+    // DataStore для хранения данных
+    implementation("androidx.datastore:datastore-preferences:1.3.0-alpha11")
+
+    // Официальный модуль шифрования DataStore через Tink
+    implementation("androidx.datastore:datastore-tink:1.3.0-alpha11")
+
+    // библиотека Tink
+    implementation("com.google.crypto.tink:tink-android:1.23.0")
+
 // retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
