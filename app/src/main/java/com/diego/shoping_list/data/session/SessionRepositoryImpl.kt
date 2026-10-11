@@ -10,8 +10,8 @@ class SessionRepositoryImpl(
 
     override suspend fun saveSession(session: AuthSession) {
         localDataSource.saveSession(
-            accessToken = session.accessToken ?: "",
-            refreshToken = session.refreshToken ?: "",
+            accessToken = session.accessToken,
+            refreshToken = session.refreshToken,
             userId = session.userId
         )
     }
@@ -40,9 +40,7 @@ class SessionRepositoryImpl(
     ): AuthTokens {
         val userId = localDataSource.getUserId()
 
-        if (userId == -1L) {
-            throw IllegalStateException("Cannot update tokens: userId is missing")
-        }
+        check(userId != -1L) { "Cannot update tokens: userId is missing" }
 
         localDataSource.saveSession(
             accessToken = accessToken,
