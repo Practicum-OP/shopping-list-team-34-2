@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.diego.shoping_list.R
@@ -30,6 +31,7 @@ fun ProductItem(
     dragHandleModifier: Modifier = Modifier,
     dragHandleEnable: Boolean = false
 ) {
+    val unitLabel = stringResource(product.unit!!.labelRes())
     Column(
         modifier = Modifier
             .height(72.dp)
@@ -52,7 +54,8 @@ fun ProductItem(
                     textDecoration = if (product.isChecked) TextDecoration.LineThrough else null
                 )
                 Text(
-                    text = "${product.quantity} ${product.unit}",
+
+                    text = "${product.quantity} $unitLabel",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -60,7 +63,7 @@ fun ProductItem(
             if (dragHandleEnable) {
                 Icon(
                     painter = painterResource(R.drawable.ic_drag_handle_24),
-                    contentDescription = "Drag to reorder",
+                    contentDescription = null,
                     modifier = dragHandleModifier
                 )
             }
@@ -90,7 +93,7 @@ fun CustomCheckbox(
     ) {
         Icon(
             painter = painterResource(id = iconRes),
-            contentDescription = if (checked) "Выбрано" else "Не выбрано",
+            contentDescription = if (checked) stringResource(R.string.cd_checked) else stringResource(R.string.cd_unchecked),
             modifier = Modifier.size(24.dp),
             tint = Color.Unspecified
         )

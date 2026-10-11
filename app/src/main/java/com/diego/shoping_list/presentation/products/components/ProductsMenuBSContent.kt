@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,11 +32,13 @@ import com.diego.shoping_list.presentation.products.stateitems.ProductsMenuEvent
 @Composable
 fun ProductsMenuBSContent(
     sortMode: SortMode,
+    canDeleteAll: Boolean,
+    canClearChecked: Boolean,
     onEvent: (ProductsMenuEvent) -> Unit
 ) {
     var showPopup by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .height(56.dp)
@@ -46,7 +47,7 @@ fun ProductsMenuBSContent(
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_sort_icon_24),
-                contentDescription = "Sorting"
+                contentDescription = stringResource(R.string.cd_sort)
             )
             Column(
                 modifier = Modifier
@@ -61,11 +62,11 @@ fun ProductsMenuBSContent(
                 Text(
                     text = when (sortMode) {
                         SortMode.ALPHABETICAL -> {
-                            "По алфавиту"
+                            stringResource(R.string.products_menu_sort_by_alphabet)
                         }
 
                         SortMode.MANUAL -> {
-                            "Пользовательская"
+                            stringResource(R.string.products_menu_sort_by_user)
                         }
                     },
                     style = MaterialTheme.typography.bodyMedium,
@@ -110,11 +111,13 @@ fun ProductsMenuBSContent(
         MenuRow(
             iconRes = R.drawable.ic_delete_all_24,
             textRes = R.string.products_menu_delete_all,
+            enabled = canDeleteAll,
             onClick = { onEvent(ProductsMenuEvent.DeleteAll) }
         )
         MenuRow(
             iconRes = R.drawable.ic_clear_checked_24,
             textRes = R.string.products_menu_clear_checked,
+            enabled = canClearChecked,
             onClick = { onEvent(ProductsMenuEvent.ClearChecked) }
         )
     }
@@ -150,7 +153,9 @@ private fun SortModeMenuItem(
                     }
                     Icon(
                         painter = painterResource(id = iconButtonRes),
-                        contentDescription = if (selected) "Выбрано" else "Не выбрано",
+                        contentDescription = if (selected) stringResource(R.string.cd_checked) else stringResource(
+                            R.string.cd_unchecked
+                        ),
                         modifier = Modifier.size(24.dp),
                         tint = Color.Unspecified
                     )
@@ -165,25 +170,33 @@ private fun SortModeMenuItem(
 private fun MenuRow(
     iconRes: Int,
     textRes: Int,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .padding(horizontal = 16.dp)
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             painter = painterResource(iconRes),
-            contentDescription = null
+            contentDescription = null,
+            tint = contentColor
         )
         Text(
             text = stringResource(textRes),
             modifier = Modifier.padding(start = 12.dp),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = contentColor
         )
     }
 }
