@@ -17,7 +17,7 @@ data class ProductInListEntity(
     val listId: Long,
     val name: String,
     val quantity: Int,
-    val unit: String = "",
+    val unit: String? = "",
     val isChecked: Boolean = false,
     val positionInList: Int
 )

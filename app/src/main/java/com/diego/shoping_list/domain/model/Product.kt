@@ -5,7 +5,7 @@ data class Product(
     val listId: Long,
     val name: String,
     val quantity: Int,
-    val unit: String = "",
+    val unit: ProductUnit? = ProductUnit.PIECE,
     val isChecked: Boolean = false,
     val positionInList: Int
 )

@@ -1,6 +1,5 @@
 package com.diego.shoping_list.data.database.repository
 
-import android.util.Log
 import com.diego.shoping_list.data.database.dao.ProductInListDao
 import com.diego.shoping_list.data.database.dao.ProductNameDao
 import com.diego.shoping_list.data.database.entities.ProductInListEntity
@@ -10,6 +9,7 @@ import com.diego.shoping_list.domain.SortMode
 import com.diego.shoping_list.domain.api.ProductInListRepository
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
+import com.diego.shoping_list.domain.model.ProductUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.Locale
@@ -43,7 +43,7 @@ class ProductInListRepositoryImpl(
                     ProductSuggestion(
                         name = entity.name
                             .replaceFirstChar { it.titlecase(Locale.getDefault()) },
-                        defaultUnit = entity.defaultUnit
+                        defaultUnit = entity.defaultUnit.let { runCatching { ProductUnit.valueOf(it) }.getOrNull() }
                     )
                 }
             }
@@ -52,11 +52,12 @@ class ProductInListRepositoryImpl(
         listId: Long,
         name: String,
         quantity: Int,
-        unit: String
+        unit: ProductUnit?
     ): Result<Long> {
         val position = productDao.nextPosition(listId)
 
         val trimmed = name.trim()
+        val lowered = trimmed.lowercase()
 
         if (trimmed.isEmpty()) {
             return Result.failure(IllegalArgumentException("Название продукта не может быть пустым"))
@@ -72,19 +73,42 @@ class ProductInListRepositoryImpl(
                     listId = listId,
                     name = trimmed,
                     quantity = quantity,
-                    unit = unit,
+                    unit = unit?.name,
                     positionInList = position
                 )
             )
-            Log.d("ProductList", "$id, $trimmed, $unit")
-            // Автосохранение в справочник для автодополнения в будущем
-            saveToCatalog(trimmed, unit)
+
+            saveToCatalog(lowered, unit)
 
             Result.success(id)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    // сохранить/обновить имя в справочнике
+    private suspend fun saveToCatalog(name: String, unit: ProductUnit?) {
+        val existing = productNameDao.findByName(name)
+
+        if (existing == null) {
+            productNameDao.insert(
+                ProductNameEntity(
+                    name = name,
+                    defaultUnit = unit!!.name,
+                    useCount = 1,
+                    lastUsed = System.currentTimeMillis()
+                )
+            )
+        } else {
+            productNameDao.update(
+                existing.copy(
+                    useCount = existing.useCount + 1,
+                    lastUsed = System.currentTimeMillis(),
+                    defaultUnit = unit!!.name
+                )
+            )
         }
     }
 
@@ -151,30 +175,6 @@ class ProductInListRepositoryImpl(
             throw e
         } catch (e: Exception) {
             Result.failure(e)
-        }
-    }
-
-    // сохранить/обновить имя в справочнике
-    private suspend fun saveToCatalog(name: String, unit: String) {
-        val existing = productNameDao.findByName(name)
-
-        if (existing == null) {
-            productNameDao.insert(
-                ProductNameEntity(
-                    name = name.lowercase(),
-                    defaultUnit = unit,
-                    useCount = 1,
-                    lastUsed = System.currentTimeMillis()
-                )
-            )
-        } else {
-            productNameDao.update(
-                existing.copy(
-                    useCount = existing.useCount + 1,
-                    lastUsed = System.currentTimeMillis(),
-                    defaultUnit = unit
-                )
-            )
         }
     }
 }

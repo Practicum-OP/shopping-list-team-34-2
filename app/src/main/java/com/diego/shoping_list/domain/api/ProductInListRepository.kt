@@ -3,6 +3,7 @@ package com.diego.shoping_list.domain.api
 import com.diego.shoping_list.domain.SortMode
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
+import com.diego.shoping_list.domain.model.ProductUnit
 import kotlinx.coroutines.flow.Flow
 
 interface ProductInListRepository {
@@ -16,7 +17,7 @@ interface ProductInListRepository {
         listId: Long,
         name: String,
         quantity: Int,
-        unit: String
+        unit: ProductUnit?
     ): Result<Long>
 
     suspend fun updateProduct(product: Product): Result<Unit>

@@ -27,6 +27,7 @@
 
     <string name="product_screen_title">Продукты</string>
     <string name="products_menu_icon_description">Меню</string>
+    <string name="products_dialog_delete_product">Удалить «%1$s»?</string>
     <string name="products_dialog_delete_all">Удалить все товары?</string>
     <string name="products_dialog_clear_checked">Удалить все купленные товары?</string>
     <string name="product_list_empty">В списке покупок пока пусто</string>
@@ -35,4 +36,29 @@
     <string name="products_menu_sort_by_user">Пользовательская</string>
     <string name="products_menu_delete_all">Удалить все</string>
     <string name="products_menu_clear_checked">Очистить купленные</string>
+
+    <string name="name_label">Название продукта</string>
+    <string name="quantity_label">Кол-во</string>
+    <string name="unit_label">Ед.</string>
+    <string name="cd_sort">Сортировка</string>
+    <string name="cd_checked">Выбрано</string>
+    <string name="cd_unchecked">Не выбрано</string>
+    <string name="unit_liter">л</string>
+    <string name="unit_milliliter">мл</string>
+    <string name="unit_pack">уп</string>
+    <string name="unit_packet">пач</string>
+    <string name="unit_piece">шт</string>
+    <string name="unit_kilogram">кг</string>
+    <string name="unit_gram">гр</string>
+
+    <string name="button_delete_default_text">Удалить</string>
+    <string name="button_cancel_default_text">Отмена</string>
+
+    <string name="error_save_product">Не удалось сохранить продукт</string>
+    <string name="error_delete_product">Не удалось удалить продукт</string>
+    <string name="error_save_order">Не удалось сохранить порядок</string>
+    <string name="error_unknown">Что-то пошло не так</string>
+
+    <string name="toast_product_saved">Сохранено</string>
+    <string name="toast_product_deleted">Удалено</string>
 </resources>
