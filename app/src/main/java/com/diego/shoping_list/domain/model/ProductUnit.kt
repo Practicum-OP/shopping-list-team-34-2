@@ -1,13 +1,11 @@
 package com.diego.shoping_list.domain.model
 
-enum class ProductUnit(val label: String) {
-    LITER("л"),
-    MILLILITER("мл"),
-    PACK("уп"),
-    PACKET("пач"),
-    PIECE("шт"),
-    KILOGRAM("кг"),
-    GRAM("гр")
+enum class ProductUnit {
+    LITER,
+    MILLILITER,
+    PACK,
+    PACKET,
+    PIECE,
+    KILOGRAM,
+    GRAM
 }
-
-val productUnits: List<String> = ProductUnit.entries.map { it.label }

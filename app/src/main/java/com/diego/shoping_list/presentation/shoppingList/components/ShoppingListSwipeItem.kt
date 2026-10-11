@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -23,10 +24,13 @@ import com.diego.shoping_list.ui.theme.Dimens
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-private enum class SwipeMenuState { Closed, Open }
+enum class SwipeMenuState { Closed, Open }
 
 @Composable
 fun ShoppingListSwipeItem(
+    itemId: String,
+    openItemId: String?,
+    onOpenItemChange: (String?) -> Unit,
     onRenameClick: () -> Unit,
     onCopyClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -51,8 +55,27 @@ fun ShoppingListSwipeItem(
         scope.launch { swipeState.animateTo(SwipeMenuState.Closed) }
     }
 
+    LaunchedEffect(swipeState.settledValue) {
+        if (swipeState.settledValue == SwipeMenuState.Open) {
+            onOpenItemChange(itemId)
+        } else if (openItemId == itemId) {
+            onOpenItemChange(null)
+        }
+    }
+
+    LaunchedEffect(openItemId, itemId) {
+        if (openItemId != itemId &&
+            swipeState.settledValue != SwipeMenuState.Closed
+        ) {
+            swipeState.animateTo(SwipeMenuState.Closed)
+        }
+    }
+
+    val isOpen = swipeState.currentValue == SwipeMenuState.Open ||
+            swipeState.targetValue == SwipeMenuState.Open
+
     Box(modifier = modifier.fillMaxWidth()) {
-        if (swipeState.offset < 0f) {
+        if (isOpen) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSmall, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,

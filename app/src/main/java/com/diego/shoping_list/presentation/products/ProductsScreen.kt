@@ -1,7 +1,6 @@
 package com.diego.shoping_list.presentation.products
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,14 +15,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,10 +46,14 @@ import com.diego.shoping_list.presentation.products.components.AddProductBottomS
 import com.diego.shoping_list.presentation.products.components.ConfirmDialog
 import com.diego.shoping_list.presentation.products.components.ProductItem
 import com.diego.shoping_list.presentation.products.components.ProductsMenuBSContent
-import com.diego.shoping_list.presentation.products.components.SwipeToActionBox
+import com.diego.shoping_list.presentation.products.components.SwipeProductBox
 import com.diego.shoping_list.presentation.products.stateitems.AddProductEvent
 import com.diego.shoping_list.presentation.products.stateitems.AddProductFormState
+import com.diego.shoping_list.presentation.products.stateitems.ProductsEffect
+import com.diego.shoping_list.presentation.products.stateitems.ProductsError
+import com.diego.shoping_list.presentation.products.stateitems.ProductsIntent
 import com.diego.shoping_list.presentation.products.stateitems.ProductsMenuEvent
+import com.diego.shoping_list.presentation.products.stateitems.ProductsToast
 import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListFab
 import com.diego.shoping_list.ui.theme.Dimens
 import kotlinx.coroutines.flow.Flow
@@ -55,16 +66,51 @@ fun ProductsScreen(
     viewModel: ProductsViewModel = koinViewModel(),
     onBackClick: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val onIntent: (ProductsIntent) -> Unit = viewModel::onIntent
+    val context = LocalContext.current
+
+    var openSwipeItemId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(state.isAddSheetVisible, state.isMenuSheetVisible) {
+        if (state.isAddSheetVisible || state.isMenuSheetVisible) openSwipeItemId = null
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is ProductsEffect.ShowError -> {
+                    val msgRes = when (effect.error) {
+                        ProductsError.SaveFailed -> R.string.error_save_product
+                        ProductsError.DeleteFailed -> R.string.error_delete_product
+                        ProductsError.SaveOrderFailed -> R.string.error_save_order
+                        ProductsError.Unknown -> R.string.error_unknown
+                    }
+                    snackbarHostState.showSnackbar(context.getString(msgRes))
+                }
+
+                is ProductsEffect.ShowToast -> {
+                    val msgRes = when (effect.toast) {
+                        ProductsToast.ProductSaved -> R.string.toast_product_saved
+                        ProductsToast.ProductDeleted -> R.string.toast_product_deleted
+                    }
+                    Toast.makeText(context, context.getString(msgRes), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.product_screen_title),
                 onBackClick = onBackClick,
                 actions = {
-                    IconButton(onClick = viewModel::onProductsMenuClick) {
+                    IconButton(onClick = { onIntent(ProductsIntent.ProductMenuClick) }) {
                         AppBarIcon(
                             iconResId = R.drawable.ic_products_menu,
                             contentDescription = stringResource(R.string.products_menu_icon_description),
@@ -73,7 +119,7 @@ fun ProductsScreen(
                 }
             )
         },
-        floatingActionButton = { ShoppingListFab(onClick = viewModel::onAddProductClick) }
+        floatingActionButton = { ShoppingListFab(onClick = { onIntent(ProductsIntent.AddProductClick) }) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -81,71 +127,115 @@ fun ProductsScreen(
                 .padding(innerPadding)
         ) {
             when {
-                uiState.showEmptyPlaceholder -> {
+                state.showEmptyPlaceholder -> {
                     ShowEmptyScreen(modifier = Modifier.fillMaxSize())
                 }
 
-                uiState.isManualSortMode -> {
+                state.isManualSortMode -> {
                     ReorderableProductList(
-                        products = uiState.products,
+                        products = state.products,
+                        openItemId = openSwipeItemId,
+                        onOpenItemChange = { openSwipeItemId = it },
                         actions = ReorderableProductListActions(
-                            onMove = { from, to -> viewModel.onProductMove(from, to) },
-                            onDragStarted = viewModel::onDragStarted,
-                            onDragStopped = viewModel::onDragStopped,
+                            onMove = { from, to -> onIntent(ProductsIntent.ProductMove(from, to)) },
+                            onDragStarted = { onIntent(ProductsIntent.DragStarted) },
+                            onDragStopped = { onIntent(ProductsIntent.DragStopped) },
                             onEdit = { product ->
-                                viewModel.onAddProductEvent(AddProductEvent.EditProduct(product.id))
+                                viewModel.onIntent(
+                                    ProductsIntent.AddProduct(
+                                        AddProductEvent.EditProduct(
+                                            product.id
+                                        )
+                                    )
+                                )
                             },
-                            onDelete = viewModel::deleteProduct,
-                            onToggleChecked = viewModel::onProductCheckedChange
+                            onDelete = { product -> onIntent(ProductsIntent.DeleteProduct(product)) },
+                            onToggleChecked = { product, checked ->
+                                onIntent(
+                                    ProductsIntent.ProductCheckedChange(
+                                        product,
+                                        checked
+                                    )
+                                )
+                            }
                         )
                     )
                 }
 
                 else -> {
                     ShowProductList(
-                        productsList = uiState.products,
+                        productsList = state.products,
+                        openItemId = openSwipeItemId,
+                        onOpenItemChange = { openSwipeItemId = it },
                         onEdit = { product ->
-                            viewModel.onAddProductEvent(AddProductEvent.EditProduct(product.id))
+                            viewModel.onIntent(
+                                ProductsIntent.AddProduct(
+                                    AddProductEvent.EditProduct(
+                                        product.id
+                                    )
+                                )
+                            )
                         },
-                        onDelete = viewModel::deleteProduct,
-                        onToggleChecked = viewModel::onProductCheckedChange
+                        onDelete = { product -> onIntent(ProductsIntent.DeleteProduct(product)) },
+                        onToggleChecked = { product, checked ->
+                            onIntent(
+                                ProductsIntent.ProductCheckedChange(
+                                    product,
+                                    checked
+                                )
+                            )
+                        }
                     )
                 }
             }
         }
     }
 
-    if (uiState.isAddSheetVisible) {
+    if (state.isAddSheetVisible) {
         AddProductBottomSheet(
-            state = uiState.addForm,
-            onEvent = viewModel::onAddProductEvent,
-            onDismiss = viewModel::onDismissAddProduct,
+            state = state.addForm,
+            onEvent = { event -> onIntent(ProductsIntent.AddProduct(event)) },
+            onDismiss = { onIntent(ProductsIntent.DismissAddProduct) },
             onQuerySuggestions = viewModel::suggestionsFor
         )
     }
 
-    if (uiState.isMenuSheetVisible) {
+    if (state.isMenuSheetVisible) {
         ProductsMenuBottomSheet(
-            sortMode = uiState.sortMode,
-            onEvent = viewModel::onProductsMenuEvent,
-            onDismiss = viewModel::onDismissMenuProduct
+            sortMode = state.sortMode,
+            canDeleteAll = state.canDeleteAll,
+            canClearChecked = state.canClearChecked,
+            onEvent = { event -> onIntent(ProductsIntent.Menu(event)) },
+            onDismiss = { onIntent(ProductsIntent.DismissProductMenu) }
         )
 
     }
 
-    if (uiState.isDeleteAllDialogVisible) {
+    val productToDelete = state.productToDelete
+    if (state.isDeleteProductDialogVisible && productToDelete != null) {
+        ConfirmDialog(
+            title = stringResource(
+                R.string.products_dialog_delete_product,
+                productToDelete.name,
+            ),
+            onConfirm = { onIntent(ProductsIntent.ConfirmDeleteProduct) },
+            onDismiss = { onIntent(ProductsIntent.DismissDeleteProduct) }
+        )
+    }
+
+    if (state.isDeleteAllDialogVisible) {
         ConfirmDialog(
             title = stringResource(R.string.products_dialog_delete_all),
-            onConfirm = { viewModel.onProductsMenuEvent(ProductsMenuEvent.ConfirmDeleteAll) },
-            onDismiss = { viewModel.onProductsMenuEvent(ProductsMenuEvent.DismissDeleteAllDialog) }
+            onConfirm = { onIntent(ProductsIntent.Menu(ProductsMenuEvent.ConfirmDeleteAll)) },
+            onDismiss = { onIntent(ProductsIntent.Menu(ProductsMenuEvent.DismissDeleteAllDialog)) }
         )
     }
 
-    if (uiState.isClearCheckedDialogVisible) {
+    if (state.isClearCheckedDialogVisible) {
         ConfirmDialog(
             title = stringResource(R.string.products_dialog_clear_checked),
-            onConfirm = { viewModel.onProductsMenuEvent(ProductsMenuEvent.ConfirmClearChecked) },
-            onDismiss = { viewModel.onProductsMenuEvent(ProductsMenuEvent.DismissClearCheckedDialog) }
+            onConfirm = { onIntent(ProductsIntent.Menu(ProductsMenuEvent.ConfirmClearChecked)) },
+            onDismiss = { onIntent(ProductsIntent.Menu(ProductsMenuEvent.DismissClearCheckedDialog)) }
         )
     }
 }
@@ -181,6 +271,8 @@ private fun ShowEmptyScreen(modifier: Modifier = Modifier) {
 @Composable
 private fun ShowProductList(
     productsList: List<Product>,
+    openItemId: String?,
+    onOpenItemChange: (String?) -> Unit,
     onEdit: (Product) -> Unit,
     onDelete: (Product) -> Unit,
     onToggleChecked: (Product, Boolean) -> Unit
@@ -190,19 +282,13 @@ private fun ShowProductList(
             .fillMaxSize()
     ) {
         items(items = productsList, key = { it.id }) { product ->
-            SwipeToActionBox(
-                onSwipeStartToEnd = { onEdit(product) },
-                onSwipeEndToStart = { onDelete(product) },
-                startIcon = R.drawable.ic_search,
-                endIcon = R.drawable.ic_delete,
-                modifier = Modifier.animateItem(
-                    fadeInSpec = tween(300),
-                    fadeOutSpec = tween(400),
-                    placementSpec = tween(
-                        durationMillis = 600,
-                        easing = FastOutSlowInEasing
-                    )
-                )
+
+            SwipeProductBox(
+                itemId = product.id.toString(),
+                openItemId = openItemId,
+                onOpenItemChange = onOpenItemChange,
+                onEdit = { onEdit(product) },
+                onDelete = { onDelete(product) }
             ) {
                 ProductItem(
                     product,
@@ -216,6 +302,8 @@ private fun ShowProductList(
 @Composable
 private fun ReorderableProductList(
     products: List<Product>,
+    openItemId: String?,
+    onOpenItemChange: (String?) -> Unit,
     actions: ReorderableProductListActions
 ) {
     val haptic = LocalHapticFeedback.current
@@ -232,20 +320,20 @@ private fun ReorderableProductList(
     ) {
         items(products, key = { it.id }) { product ->
             ReorderableItem(reorderableState, key = product.id) {
-                SwipeToActionBox(
-                    onSwipeStartToEnd = { actions.onEdit(product) },
-                    onSwipeEndToStart = { actions.onDelete(product) },
-                    startIcon = R.drawable.ic_search,
-                    endIcon = R.drawable.ic_delete,
-                    modifier = Modifier.animateItem(
-                        fadeInSpec = tween(300),
-                        fadeOutSpec = tween(400),
-                        placementSpec = tween(600, easing = FastOutSlowInEasing)
-                    )
-                ) {
+                SwipeProductBox(
+                    itemId = product.id.toString(),
+                    openItemId = openItemId,
+                    onOpenItemChange = onOpenItemChange,
+                    onEdit = { actions.onEdit(product) },
+                    onDelete = { actions.onDelete(product) }) {
                     ProductItem(
                         product = product,
-                        onToggleChecked = { checked -> actions.onToggleChecked(product, checked) },
+                        onToggleChecked = { checked ->
+                            actions.onToggleChecked(
+                                product,
+                                checked
+                            )
+                        },
                         dragHandleModifier = Modifier.draggableHandle(
                             onDragStarted = {
                                 haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
@@ -292,6 +380,8 @@ private fun AddProductBottomSheet(
 @Composable
 private fun ProductsMenuBottomSheet(
     sortMode: SortMode,
+    canDeleteAll: Boolean,
+    canClearChecked: Boolean,
     onEvent: (ProductsMenuEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -304,11 +394,12 @@ private fun ProductsMenuBottomSheet(
     ) {
         ProductsMenuBSContent(
             sortMode = sortMode,
+            canDeleteAll = canDeleteAll,
+            canClearChecked = canClearChecked,
             onEvent = onEvent
         )
     }
 }
-
 
 data class ReorderableProductListActions(
     val onMove: (from: Int, to: Int) -> Unit,

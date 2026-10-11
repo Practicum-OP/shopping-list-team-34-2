@@ -6,14 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -26,12 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.PopupProperties
 import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
@@ -41,6 +37,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Duration.Companion.milliseconds
 
+private sealed interface Overlay {
+    data object UnitMenu : Overlay
+    data object Suggestions : Overlay
+}
 
 @Composable
 fun AddProductBottomSheetContent(
@@ -61,11 +61,31 @@ fun AddProductBottomSheetContent(
     val decrementEnabled = quantityValue != null && quantityValue > minQuantity
     val incrementEnabled = (quantityValue ?: 0) < maxQuantity
 
+
     val visibleSuggestions = suggestions
     val reservedHeight = remember(visibleSuggestions.size) {
         (SUGGESTION_ITEM_HEIGHT * visibleSuggestions.size + MENU_VERTICAL_MARGIN * 2)
             .coerceAtMost(MAX_RESERVED_HEIGHT)
     }
+
+    var openOverlay by remember(state.editingProduct?.id) {
+        mutableStateOf<Overlay?>(null)
+    }
+
+    LaunchedEffect(showSuggestions, suggestions.size, openOverlay) {
+        if (showSuggestions && suggestions.isNotEmpty() && openOverlay == null) {
+            openOverlay = Overlay.Suggestions
+        } else if (!showSuggestions && openOverlay == Overlay.Suggestions) {
+            openOverlay = null
+        }
+    }
+
+    val overlayLift = when (openOverlay) {
+        Overlay.UnitMenu -> UNIT_RESERVED_HEIGHT
+        Overlay.Suggestions -> reservedHeight
+        null -> 0.dp
+    }
+
 
     LaunchedEffect(state.name, state.editingProduct?.id) {
         val q = state.name
@@ -91,45 +111,33 @@ fun AddProductBottomSheetContent(
                 OutlinedTextField(
                     value = state.name,
                     onValueChange = { onEvent(AddProductEvent.NameChange(it)) },
-                    label = { Text("Название продукта") },
+                    label = { Text(stringResource(R.string.name_label)) },
                     isError = state.nameError != null,
                     supportingText = state.nameError?.let { { Text(it) } },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .onFocusChanged { focusState ->
+                            if (!focusState.isFocused && showSuggestions) {
+                                showSuggestions = false
+                            }
+                        }
                 )
 
-                DropdownMenu(
+                SuggestionDropdown(
                     expanded = showSuggestions,
-                    onDismissRequest = { showSuggestions = false },
+                    suggestions = suggestions,
+                    onSuggestionClick = { suggestion ->
+                        lastSelected = suggestion.name
+                        onEvent(AddProductEvent.SuggestionSelected(suggestion))
+                        suggestions = emptyList()
+                        showSuggestions = false
+                    },
+                    onDismiss = { showSuggestions = false },
                     modifier = Modifier.fillMaxWidth(0.9f),
-                    properties = PopupProperties(focusable = false),
-                    tonalElevation = 0.dp
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .heightIn(max = MAX_RESERVED_HEIGHT - MENU_VERTICAL_MARGIN * 2)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        suggestions.forEach { suggestion ->
-                            DropdownMenuItem(
-                                text = {
-                                    Column {
-                                        Text(suggestion.name)
-                                    }
-                                },
-                                onClick = {
-                                    lastSelected = suggestion.name
-                                    onEvent(AddProductEvent.SuggestionSelected(suggestion))
-                                    suggestions = emptyList()
-                                    showSuggestions = false
-                                }
-                            )
-                        }
-
-                    }
-                }
+                    maxHeight = MAX_RESERVED_HEIGHT - MENU_VERTICAL_MARGIN * 2,
+                )
 
             }
 
@@ -140,7 +148,7 @@ fun AddProductBottomSheetContent(
                 OutlinedTextField(
                     value = state.quantity,
                     onValueChange = { onEvent(AddProductEvent.QuantityChange(it)) },
-                    label = { Text("Кол-во") },
+                    label = { Text(stringResource(R.string.quantity_label)) },
                     isError = state.quantityError != null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -152,27 +160,13 @@ fun AddProductBottomSheetContent(
 
                 Spacer(Modifier.width(8.dp))
 
-
-                /*                // Вернуться к этому, если что-то пойдет не так
-
-                                OutlinedTextField(
-                                    value = state.unit,
-                                    onValueChange = { onEvent(AddProductEvent.UnitChange(it)) },
-                                    label = { Text("Ед.") },
-                                    singleLine = true,
-                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                    keyboardActions = KeyboardActions(
-                                        onDone = {
-                                            focusManager.clearFocus()
-                                            onEvent(AddProductEvent.Submit)
-                                        }
-                                    ),
-                                    modifier = Modifier.width(100.dp)
-                                )*/
-
                 UnitDropdown(
                     unit = state.unit,
                     onUnitChange = { onEvent(AddProductEvent.UnitChange(it)) },
+                    onExpandedChange = { open ->
+                        openOverlay = if (open) Overlay.UnitMenu else null
+                        if (open) showSuggestions = false
+                    },
                     modifier = Modifier.width(100.dp)
                 )
 
@@ -185,7 +179,7 @@ fun AddProductBottomSheetContent(
                             if (decrementEnabled) R.drawable.ic_decrease_on
                             else R.drawable.ic_decrease_off
                         ),
-                        contentDescription = "",
+                        contentDescription = null,
                         tint = Color.Unspecified
                     )
                 }
@@ -196,14 +190,14 @@ fun AddProductBottomSheetContent(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_increase),
-                        contentDescription = "",
+                        contentDescription = null,
                         tint = Color.Unspecified
                     )
                 }
             }
 
-            if (showSuggestions && suggestions.isNotEmpty()) {
-                Spacer(Modifier.height(reservedHeight))
+            if (openOverlay != null) {
+                Spacer(Modifier.height(overlayLift))
             }
 
             FloatingOverlayButton(
@@ -211,7 +205,8 @@ fun AddProductBottomSheetContent(
                 enabled = state.canSubmit,
                 onClick = {
                     onEvent(AddProductEvent.Submit)
-                }
+                },
+                extraOffset = overlayLift
             )
         }
     }
@@ -229,3 +224,4 @@ private fun shouldSkipSearch(
 private val SUGGESTION_ITEM_HEIGHT = 48.dp
 private val MENU_VERTICAL_MARGIN = 8.dp
 private val MAX_RESERVED_HEIGHT = 256.dp
+private val UNIT_RESERVED_HEIGHT = 196.dp

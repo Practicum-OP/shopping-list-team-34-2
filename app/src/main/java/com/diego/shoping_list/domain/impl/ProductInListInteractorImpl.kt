@@ -5,6 +5,7 @@ import com.diego.shoping_list.domain.api.ProductInListInteractor
 import com.diego.shoping_list.domain.api.ProductInListRepository
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
+import com.diego.shoping_list.domain.model.ProductUnit
 import kotlinx.coroutines.flow.Flow
 
 class ProductInListInteractorImpl(private val productInListRepository: ProductInListRepository) :
@@ -25,7 +26,7 @@ class ProductInListInteractorImpl(private val productInListRepository: ProductIn
         listId: Long,
         name: String,
         quantity: Int,
-        unit: String
+        unit: ProductUnit?
     ): Result<Long> {
         return productInListRepository.addProduct(
             listId = listId,

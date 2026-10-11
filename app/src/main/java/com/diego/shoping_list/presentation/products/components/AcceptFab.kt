@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -17,9 +18,13 @@ import com.diego.shoping_list.R
 fun FloatingOverlayButton(
     visible: Boolean,
     onClick: () -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    extraOffset: Dp = 0.dp,
 ) {
-    val offsetY = with(LocalDensity.current) { (-250).dp.roundToPx() }
+    val density = LocalDensity.current
+    val baseOffsetY = with(density) { (-250).dp.roundToPx() }
+    val extraOffsetPx = with(density) { extraOffset.roundToPx() }
+    val offsetY = baseOffsetY - extraOffsetPx
 
     if (!visible) return
 
