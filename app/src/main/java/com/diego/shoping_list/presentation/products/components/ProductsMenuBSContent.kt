@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,7 +38,7 @@ fun ProductsMenuBSContent(
 ) {
     var showPopup by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .height(56.dp)
@@ -154,7 +153,9 @@ private fun SortModeMenuItem(
                     }
                     Icon(
                         painter = painterResource(id = iconButtonRes),
-                        contentDescription = if (selected) stringResource(R.string.cd_checked) else stringResource(R.string.cd_unchecked),
+                        contentDescription = if (selected) stringResource(R.string.cd_checked) else stringResource(
+                            R.string.cd_unchecked
+                        ),
                         modifier = Modifier.size(24.dp),
                         tint = Color.Unspecified
                     )
