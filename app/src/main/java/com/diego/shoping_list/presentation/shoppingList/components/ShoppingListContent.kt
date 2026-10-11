@@ -19,6 +19,7 @@ import com.diego.shoping_list.presentation.common.AppConfirmDialog
 import com.diego.shoping_list.presentation.common.AppDialogWindow
 import com.diego.shoping_list.presentation.common.ConfirmDialog
 import com.diego.shoping_list.presentation.common.DialogWindow
+import com.diego.shoping_list.presentation.common.SwipeState
 import com.diego.shoping_list.ui.theme.Dimens
 
 @Composable
@@ -49,9 +50,11 @@ fun ShoppingListContent(
     ) {
         items(shoppingLists, key = { it.id }) { shoppingList ->
             ShoppingListSwipeItem(
-                itemId = shoppingList.id.toString(),
-                openItemId = openSwipeItemId,
-                onOpenItemChange = { openSwipeItemId = it },
+                swipe = SwipeState(
+                    itemId = shoppingList.id.toString(),
+                    openItemId = openSwipeItemId,
+                    onOpenItemChange = { openSwipeItemId = it }
+                ),
                 onRenameClick = {
                     listToRename = shoppingList
                 },

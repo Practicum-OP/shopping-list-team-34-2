@@ -9,6 +9,7 @@ import com.diego.shoping_list.domain.api.ProductInListInteractor
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
 import com.diego.shoping_list.domain.model.ProductUnit
+import com.diego.shoping_list.presentation.common.AppLogger
 import com.diego.shoping_list.presentation.products.stateitems.AddProductEvent
 import com.diego.shoping_list.presentation.products.stateitems.AddProductFormState
 import com.diego.shoping_list.presentation.products.stateitems.ProductsEffect
@@ -244,6 +245,10 @@ class ProductsViewModel(
 
         val qtyValue = qty ?: return
 
+        Submitting(form, qtyValue)
+    }
+
+    private fun Submitting(form: AddProductFormState, qtyValue: Int) {
         _state.update { it.copy(addForm = it.addForm.copy(isSubmitting = true)) }
 
         viewModelScope.launch {
@@ -275,6 +280,7 @@ class ProductsViewModel(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
+                AppLogger.e(t, "submitProduct failed")
                 _state.update {
                     it.copy(addForm = it.addForm.copy(isSubmitting = false))
                 }
@@ -292,6 +298,7 @@ class ProductsViewModel(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
+                AppLogger.e(t, "updateChecked(\${product.id}, \$checked) failed")
                 _effect.send(ProductsEffect.ShowError(ProductsError.Unknown))
             }
         }
@@ -321,6 +328,7 @@ class ProductsViewModel(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
+                AppLogger.e(t, "deleteProduct(\${product.id}) failed")
                 _effect.send(ProductsEffect.ShowError(ProductsError.DeleteFailed))
             }
         }
@@ -348,6 +356,7 @@ class ProductsViewModel(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
+                AppLogger.e(t, "saveOrder(\${listId}) failed")
                 _effect.send(ProductsEffect.ShowError(ProductsError.SaveOrderFailed))
             }
         }
@@ -364,68 +373,79 @@ class ProductsViewModel(
 
     private fun onProductMenuEvent(event: ProductsMenuEvent) {
         when (event) {
-            ProductsMenuEvent.DeleteAll -> {
-                _state.update {
-                    it.copy(
-                        isMenuSheetVisible = false,
-                        isDeleteAllDialogVisible = true
-                    )
-                }
-            }
+            ProductsMenuEvent.DeleteAll -> menuEventDeleteAll()
+            ProductsMenuEvent.ClearChecked -> menuEventClearChecked()
+            ProductsMenuEvent.ConfirmDeleteAll -> menuEventConfirmDeleteAll()
+            ProductsMenuEvent.DismissDeleteAllDialog -> menuEventDismissDeleteAllDialog()
+            ProductsMenuEvent.ConfirmClearChecked -> menuEventConfirmClearChecked()
+            ProductsMenuEvent.DismissClearCheckedDialog -> menuEventDismissClearCheckedDialog()
+            ProductsMenuEvent.SortByAlphabet -> menuEventSortByAlphabet()
+            ProductsMenuEvent.SortByUser -> menuEventSortByUser()
+        }
+    }
 
-            ProductsMenuEvent.ClearChecked -> {
-                _state.update {
-                    it.copy(
-                        isMenuSheetVisible = false,
-                        isClearCheckedDialogVisible = true
-                    )
-                }
-            }
+    private fun menuEventDeleteAll() {
+        _state.update {
+            it.copy(
+                isMenuSheetVisible = false,
+                isDeleteAllDialogVisible = true
+            )
+        }
+    }
 
-            ProductsMenuEvent.ConfirmDeleteAll -> {
-                _state.update { it.copy(isDeleteAllDialogVisible = false) }
-                viewModelScope.launch {
-                    try {
-                        interactor.deleteAllInList(listId)
-                    } catch (ce: CancellationException) {
-                        throw ce
-                    } catch (t: Throwable) {
-                        _effect.send(ProductsEffect.ShowError(ProductsError.DeleteFailed))
-                    }
-                }
-            }
+    private fun menuEventClearChecked() {
+        _state.update {
+            it.copy(
+                isMenuSheetVisible = false,
+                isClearCheckedDialogVisible = true
+            )
+        }
+    }
 
-            ProductsMenuEvent.DismissDeleteAllDialog -> {
-                _state.update { it.copy(isDeleteAllDialogVisible = false) }
-            }
-
-            ProductsMenuEvent.ConfirmClearChecked -> {
-                _state.update { it.copy(isClearCheckedDialogVisible = false) }
-                viewModelScope.launch {
-                    try {
-                        interactor.deleteCheckedInList(listId)
-                    } catch (ce: CancellationException) {
-                        throw ce
-                    } catch (t: Throwable) {
-                        _effect.send(ProductsEffect.ShowError(ProductsError.DeleteFailed))
-                    }
-                }
-            }
-
-            ProductsMenuEvent.DismissClearCheckedDialog -> {
-                _state.update { it.copy(isClearCheckedDialogVisible = false) }
-            }
-
-            ProductsMenuEvent.SortByAlphabet -> {
-                onSortModeChange(SortMode.ALPHABETICAL)
-                onDismissProductMenu()
-            }
-
-            ProductsMenuEvent.SortByUser -> {
-                onSortModeChange(SortMode.MANUAL)
-                onDismissProductMenu()
+    private fun menuEventConfirmDeleteAll() {
+        _state.update { it.copy(isDeleteAllDialogVisible = false) }
+        viewModelScope.launch {
+            try {
+                interactor.deleteAllInList(listId)
+            } catch (ce: CancellationException) {
+                throw ce
+            } catch (t: Throwable) {
+                AppLogger.e(t, "deleteAllInList(\${listId}) failed")
+                _effect.send(ProductsEffect.ShowError(ProductsError.DeleteFailed))
             }
         }
+    }
+
+    private fun menuEventDismissDeleteAllDialog() {
+        _state.update { it.copy(isDeleteAllDialogVisible = false) }
+    }
+
+    private fun menuEventConfirmClearChecked() {
+        _state.update { it.copy(isClearCheckedDialogVisible = false) }
+        viewModelScope.launch {
+            try {
+                interactor.deleteCheckedInList(listId)
+            } catch (ce: CancellationException) {
+                throw ce
+            } catch (t: Throwable) {
+                AppLogger.e(t, "deleteCheckedInList(\${listId}) failed")
+                _effect.send(ProductsEffect.ShowError(ProductsError.DeleteFailed))
+            }
+        }
+    }
+
+    private fun menuEventDismissClearCheckedDialog() {
+        _state.update { it.copy(isClearCheckedDialogVisible = false) }
+    }
+
+    private fun menuEventSortByAlphabet() {
+        onSortModeChange(SortMode.ALPHABETICAL)
+        onDismissProductMenu()
+    }
+
+    private fun menuEventSortByUser() {
+        onSortModeChange(SortMode.MANUAL)
+        onDismissProductMenu()
     }
 
     private fun onSortModeChange(mode: SortMode) {

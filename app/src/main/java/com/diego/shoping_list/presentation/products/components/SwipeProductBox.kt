@@ -22,17 +22,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.diego.shoping_list.R
+import com.diego.shoping_list.presentation.common.SwipeMenuState
+import com.diego.shoping_list.presentation.common.SwipeState
 import com.diego.shoping_list.presentation.shoppingList.components.ShoppingListSwipeButton
-import com.diego.shoping_list.presentation.shoppingList.components.SwipeMenuState
 import com.diego.shoping_list.ui.theme.Dimens
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
 fun SwipeProductBox(
-    itemId: String,
-    openItemId: String?,
-    onOpenItemChange: (String?) -> Unit,
+    swipe: SwipeState,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
@@ -58,17 +57,16 @@ fun SwipeProductBox(
     }
 
     LaunchedEffect(swipeState.settledValue) {
-        if (swipeState.settledValue == SwipeMenuState.Open) {
-            onOpenItemChange(itemId)
-        } else if (openItemId == itemId) {
-            onOpenItemChange(null)
+        when (swipeState.settledValue) {
+            SwipeMenuState.Open -> swipe.onOpenItemChange(swipe.itemId)
+            SwipeMenuState.Closed -> {
+                if (swipe.isOpen) swipe.onOpenItemChange(null)
+            }
         }
     }
 
-    LaunchedEffect(openItemId, itemId) {
-        if (openItemId != itemId &&
-            swipeState.settledValue != SwipeMenuState.Closed
-        ) {
+    LaunchedEffect(swipe.openItemId, swipe.itemId) {
+        if (!swipe.isOpen && swipeState.settledValue != SwipeMenuState.Closed) {
             swipeState.animateTo(SwipeMenuState.Closed)
         }
     }

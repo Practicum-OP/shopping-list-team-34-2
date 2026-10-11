@@ -27,10 +27,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.diego.shoping_list.R
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
+import com.diego.shoping_list.domain.model.ProductUnit
 import com.diego.shoping_list.presentation.products.stateitems.AddProductEvent
 import com.diego.shoping_list.presentation.products.stateitems.AddProductFormState
 import kotlinx.coroutines.delay
@@ -49,154 +51,63 @@ fun AddProductBottomSheetContent(
     onQuerySuggestions: (String) -> Flow<List<ProductSuggestion>>
 ) {
 
-    var suggestions by remember(state.editingProduct?.id) {
-        mutableStateOf<List<ProductSuggestion>>(emptyList())
-    }
-    var showSuggestions by remember(state.editingProduct?.id) { mutableStateOf(false) }
-    var lastSelected by remember(state.editingProduct?.id) { mutableStateOf<String?>(null) }
+    val sugg = rememberSuggestionState(state.editingProduct?.id)
 
-    val minQuantity = 1
-    val maxQuantity = 999
+    SuggestionSearchEffect(
+        query = state.name,
+        editingProduct = state.editingProduct,
+        onQuerySuggestions = onQuerySuggestions,
+        lastSelected = sugg.lastSelected,
+        onSuggestions = { sugg.suggestions = it },
+        onShowSuggestions = { sugg.showSuggestions = it }
+    )
+
     val quantityValue = state.quantity.toIntOrNull()
-    val decrementEnabled = quantityValue != null && quantityValue > minQuantity
-    val incrementEnabled = (quantityValue ?: 0) < maxQuantity
+    val decrementEnabled = quantityValue != null && quantityValue > MIN_QUANTITY
+    val incrementEnabled = (quantityValue ?: 0) < MAX_QUANTITY
 
-
-    val visibleSuggestions = suggestions
-    val reservedHeight = remember(visibleSuggestions.size) {
-        (SUGGESTION_ITEM_HEIGHT * visibleSuggestions.size + MENU_VERTICAL_MARGIN * 2)
-            .coerceAtMost(MAX_RESERVED_HEIGHT)
-    }
-
-    var openOverlay by remember(state.editingProduct?.id) {
-        mutableStateOf<Overlay?>(null)
-    }
-
-    LaunchedEffect(showSuggestions, suggestions.size, openOverlay) {
-        if (showSuggestions && suggestions.isNotEmpty() && openOverlay == null) {
-            openOverlay = Overlay.Suggestions
-        } else if (!showSuggestions && openOverlay == Overlay.Suggestions) {
-            openOverlay = null
-        }
-    }
-
-    val overlayLift = when (openOverlay) {
-        Overlay.UnitMenu -> UNIT_RESERVED_HEIGHT
-        Overlay.Suggestions -> reservedHeight
-        null -> 0.dp
-    }
-
-
-    LaunchedEffect(state.name, state.editingProduct?.id) {
-        val q = state.name
-        if (shouldSkipSearch(q, state.editingProduct, lastSelected)) {
-            suggestions = emptyList()
-            showSuggestions = false
-            return@LaunchedEffect
-        }
-
-        delay(200.milliseconds)
-        onQuerySuggestions(q).collect { list ->
-            suggestions = list
-            showSuggestions = list.isNotEmpty()
-        }
-    }
+    val (overlayController, overlayLift) =
+        rememberOverlayController(sugg.showSuggestions, sugg.suggestions.size)
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = state.name,
-                    onValueChange = { onEvent(AddProductEvent.NameChange(it)) },
-                    label = { Text(stringResource(R.string.name_label)) },
-                    isError = state.nameError != null,
-                    supportingText = state.nameError?.let { { Text(it) } },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { focusState ->
-                            if (!focusState.isFocused && showSuggestions) {
-                                showSuggestions = false
-                            }
-                        }
-                )
-
-                SuggestionDropdown(
-                    expanded = showSuggestions,
-                    suggestions = suggestions,
-                    onSuggestionClick = { suggestion ->
-                        lastSelected = suggestion.name
-                        onEvent(AddProductEvent.SuggestionSelected(suggestion))
-                        suggestions = emptyList()
-                        showSuggestions = false
-                    },
-                    onDismiss = { showSuggestions = false },
-                    modifier = Modifier.fillMaxWidth(0.9f),
-                    maxHeight = MAX_RESERVED_HEIGHT - MENU_VERTICAL_MARGIN * 2,
-                )
-
-            }
+            ProductNameField(
+                value = state.name,
+                error = state.nameError,
+                showSuggestions = sugg.showSuggestions,
+                suggestions = sugg.suggestions,
+                onValueChange = { onEvent(AddProductEvent.NameChange(it)) },
+                onSuggestionClick = { suggestion ->
+                    sugg.lastSelected = suggestion.name
+                    onEvent(AddProductEvent.SuggestionSelected(suggestion))
+                    sugg.suggestions = emptyList()
+                    sugg.showSuggestions = false
+                },
+                onDismiss = { sugg.showSuggestions = false }
+            )
 
             Spacer(Modifier.height(8.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            QuantityAndUnitRow(
+                quantity = state.quantity,
+                quantityError = state.quantityError,
+                unit = state.unit,
+                decrementEnabled = decrementEnabled,
+                incrementEnabled = incrementEnabled,
+                onQuantityChange = { onEvent(AddProductEvent.QuantityChange(it)) },
+                onUnitChange = { onEvent(AddProductEvent.UnitChange(it)) },
+                onUnitExpandedChange = { open ->
+                    overlayController.openOverlay = if (open) Overlay.UnitMenu else null
+                    if (open) sugg.showSuggestions = false
+                },
+                onDecrement = { onEvent(AddProductEvent.Decrement) },
+                onIncrement = { onEvent(AddProductEvent.Increment) }
+            )
 
-                OutlinedTextField(
-                    value = state.quantity,
-                    onValueChange = { onEvent(AddProductEvent.QuantityChange(it)) },
-                    label = { Text(stringResource(R.string.quantity_label)) },
-                    isError = state.quantityError != null,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.width(120.dp)
-                )
-
-                Spacer(Modifier.width(8.dp))
-
-                UnitDropdown(
-                    unit = state.unit,
-                    onUnitChange = { onEvent(AddProductEvent.UnitChange(it)) },
-                    onExpandedChange = { open ->
-                        openOverlay = if (open) Overlay.UnitMenu else null
-                        if (open) showSuggestions = false
-                    },
-                    modifier = Modifier.width(100.dp)
-                )
-
-                IconButton(
-                    onClick = { onEvent(AddProductEvent.Decrement) },
-                    enabled = decrementEnabled
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            if (decrementEnabled) R.drawable.ic_decrease_on
-                            else R.drawable.ic_decrease_off
-                        ),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                }
-
-                IconButton(
-                    onClick = { onEvent(AddProductEvent.Increment) },
-                    enabled = incrementEnabled
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_increase),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                }
-            }
-
-            if (openOverlay != null) {
+            if (overlayController.openOverlay != null) {
                 Spacer(Modifier.height(overlayLift))
             }
 
@@ -220,6 +131,184 @@ private fun shouldSkipSearch(
     query.isBlank() ||
             query == editingProduct?.name ||
             query == lastSelected
+
+private class SuggestionState(
+    initial: List<ProductSuggestion> = emptyList(),
+) {
+    var suggestions by mutableStateOf(initial)
+    var showSuggestions by mutableStateOf(false)
+    var lastSelected by mutableStateOf<String?>(null)
+}
+
+@Composable
+private fun rememberSuggestionState(editingProductId: Long?): SuggestionState =
+    remember(editingProductId) { SuggestionState() }
+
+@Composable
+private fun SuggestionSearchEffect(
+    query: String,
+    editingProduct: Product?,
+    onQuerySuggestions: (String) -> Flow<List<ProductSuggestion>>,
+    lastSelected: String?,
+    onSuggestions: (List<ProductSuggestion>) -> Unit,
+    onShowSuggestions: (Boolean) -> Unit
+) {
+    LaunchedEffect(query, editingProduct?.id) {
+        if (shouldSkipSearch(query, editingProduct, lastSelected)) {
+            onSuggestions(emptyList())
+            onShowSuggestions(false)
+            return@LaunchedEffect
+        }
+
+        delay(200.milliseconds)
+        onQuerySuggestions(query).collect { list ->
+            onSuggestions(list)
+            onShowSuggestions(list.isNotEmpty())
+        }
+    }
+}
+
+private fun resolveOverlay(
+    showSuggestions: Boolean,
+    suggestionCount: Int,
+    current: Overlay?
+): Overlay? = when {
+    showSuggestions && suggestionCount > 0 && current == null -> Overlay.Suggestions
+    !showSuggestions && current == Overlay.Suggestions -> null
+    else -> current
+}
+
+private class OverlayController {
+    var openOverlay by mutableStateOf<Overlay?>(null)
+}
+
+@Composable
+private fun rememberOverlayController(
+    showSuggestions: Boolean,
+    suggestionCount: Int
+): Pair<OverlayController, Dp> {
+    val controller = remember { OverlayController() }
+    val reservedHeight = remember(suggestionCount) {
+        (SUGGESTION_ITEM_HEIGHT * suggestionCount + MENU_VERTICAL_MARGIN * 2)
+            .coerceAtMost(MAX_RESERVED_HEIGHT)
+    }
+
+    LaunchedEffect(showSuggestions, suggestionCount, controller.openOverlay) {
+        controller.openOverlay =
+            resolveOverlay(showSuggestions, suggestionCount, controller.openOverlay)
+    }
+
+    val lift = when (controller.openOverlay) {
+        Overlay.UnitMenu -> UNIT_RESERVED_HEIGHT
+        Overlay.Suggestions -> reservedHeight
+        null -> 0.dp
+    }
+    return controller to lift
+}
+
+@Composable
+private fun ProductNameField(
+    value: String,
+    error: String?,
+    showSuggestions: Boolean,
+    suggestions: List<ProductSuggestion>,
+    onValueChange: (String) -> Unit,
+    onSuggestionClick: (ProductSuggestion) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(stringResource(R.string.name_label)) },
+            isError = error != null,
+            supportingText = error?.let { { Text(it) } },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { focus ->
+                    if (!focus.isFocused && showSuggestions) onDismiss()
+                }
+        )
+
+        SuggestionDropdown(
+            expanded = showSuggestions,
+            suggestions = suggestions,
+            onSuggestionClick = onSuggestionClick,
+            onDismiss = onDismiss,
+            modifier = Modifier.fillMaxWidth(0.9f),
+            maxHeight = MAX_RESERVED_HEIGHT - MENU_VERTICAL_MARGIN * 2,
+        )
+    }
+}
+
+@Composable
+private fun QuantityAndUnitRow(
+    quantity: String,
+    quantityError: String?,
+    unit: ProductUnit?,
+    decrementEnabled: Boolean,
+    incrementEnabled: Boolean,
+    onQuantityChange: (String) -> Unit,
+    onUnitChange: (ProductUnit) -> Unit,
+    onUnitExpandedChange: (Boolean) -> Unit,
+    onDecrement: () -> Unit,
+    onIncrement: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        OutlinedTextField(
+            value = quantity,
+            onValueChange = onQuantityChange,
+            label = { Text(stringResource(R.string.quantity_label)) },
+            isError = quantityError != null,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier.width(120.dp)
+        )
+
+        Spacer(Modifier.width(8.dp))
+
+        UnitDropdown(
+            unit = unit,
+            onUnitChange = onUnitChange,
+            onExpandedChange = onUnitExpandedChange,
+            modifier = Modifier.width(100.dp)
+        )
+
+        QuantityStepperButton(
+            enabled = decrementEnabled,
+            iconRes = if (decrementEnabled) R.drawable.ic_decrease_on else R.drawable.ic_decrease_off,
+            onClick = onDecrement
+        )
+        QuantityStepperButton(
+            enabled = incrementEnabled,
+            iconRes = R.drawable.ic_increase,
+            onClick = onIncrement
+        )
+    }
+}
+
+@Composable
+private fun QuantityStepperButton(
+    enabled: Boolean,
+    iconRes: Int,
+    onClick: () -> Unit
+) {
+    IconButton(onClick = onClick, enabled = enabled) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = Color.Unspecified
+        )
+    }
+}
+
+private const val MIN_QUANTITY = 1
+private const val MAX_QUANTITY = 999
 
 private val SUGGESTION_ITEM_HEIGHT = 48.dp
 private val MENU_VERTICAL_MARGIN = 8.dp

@@ -20,17 +20,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import com.diego.shoping_list.R
+import com.diego.shoping_list.presentation.common.SwipeMenuState
+import com.diego.shoping_list.presentation.common.SwipeState
 import com.diego.shoping_list.ui.theme.Dimens
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-enum class SwipeMenuState { Closed, Open }
-
 @Composable
 fun ShoppingListSwipeItem(
-    itemId: String,
-    openItemId: String?,
-    onOpenItemChange: (String?) -> Unit,
+    swipe: SwipeState,
     onRenameClick: () -> Unit,
     onCopyClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -56,17 +54,16 @@ fun ShoppingListSwipeItem(
     }
 
     LaunchedEffect(swipeState.settledValue) {
-        if (swipeState.settledValue == SwipeMenuState.Open) {
-            onOpenItemChange(itemId)
-        } else if (openItemId == itemId) {
-            onOpenItemChange(null)
+        when (swipeState.settledValue) {
+            SwipeMenuState.Open -> swipe.onOpenItemChange(swipe.itemId)
+            SwipeMenuState.Closed -> {
+                if (swipe.isOpen) swipe.onOpenItemChange(null)
+            }
         }
     }
 
-    LaunchedEffect(openItemId, itemId) {
-        if (openItemId != itemId &&
-            swipeState.settledValue != SwipeMenuState.Closed
-        ) {
+    LaunchedEffect(swipe.openItemId, swipe.itemId) {
+        if (!swipe.isOpen && swipeState.settledValue != SwipeMenuState.Closed) {
             swipeState.animateTo(SwipeMenuState.Closed)
         }
     }
