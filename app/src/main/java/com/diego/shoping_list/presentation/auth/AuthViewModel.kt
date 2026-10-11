@@ -24,15 +24,6 @@ class AuthViewModel(
     private val _effects = Channel<AuthEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
-    init {
-        viewModelScope.launch {
-            val restored = interactor.restoreSession()
-            if (restored) {
-                _effects.send(AuthEffect.NavigateToMain)
-            }
-        }
-    }
-
     fun onIntent(intent: AuthIntent) {
         when (intent) {
             AuthIntent.Submit -> submit()

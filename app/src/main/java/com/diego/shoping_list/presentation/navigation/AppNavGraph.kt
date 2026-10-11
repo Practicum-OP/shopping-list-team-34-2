@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.diego.shoping_list.presentation.auth.AuthScreen
 import com.diego.shoping_list.presentation.products.ProductsScreen
 import com.diego.shoping_list.presentation.shoppingList.ShoppingListScreen
+import com.diego.shoping_list.presentation.start.StartDestination
 import com.diego.shoping_list.presentation.start.StartScreen
 
 @Composable
@@ -23,9 +24,15 @@ fun AppNavGraph(
     ) {
         composable(Screen.Start.route) {
             StartScreen(
-                onFinished = {
-                    navController.navigate(Screen.Auth.route) {
+                onFinished = { destination ->
+                    val target = when (destination) {
+                        StartDestination.MAIN -> Screen.Main.route
+                        StartDestination.AUTH -> Screen.Auth.route
+                    }
+
+                    navController.navigate(target) {
                         popUpTo(Screen.Start.route) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
