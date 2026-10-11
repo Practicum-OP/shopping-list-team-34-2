@@ -3,11 +3,14 @@ package com.diego.shoping_list.data.database.repository
 import com.diego.shoping_list.data.database.dao.ProductInListDao
 import com.diego.shoping_list.data.database.dao.ShoppingListDao
 import com.diego.shoping_list.data.database.entities.ShoppingListEntity
+import com.diego.shoping_list.data.settings.SortModeRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 class ShoppingListRepositoryImpl(
     private val dao: ShoppingListDao,
-    private val productInListDao: ProductInListDao
+    private val productInListDao: ProductInListDao,
+    private val sortModeRepository: SortModeRepository
 ) : ShoppingListRepository {
     override fun searchByName(query: String): Flow<List<ShoppingListEntity>> {
         return if (query.isBlank()){
@@ -50,7 +53,10 @@ class ShoppingListRepositoryImpl(
 
     override suspend fun copyList(id: Long): Result<Long> {
         return try {
-            Result.success(dao.copyList(id))
+            val sortMode = sortModeRepository.sortMode(id).first()
+            val copyId = dao.copyList(id)
+            sortModeRepository.save(copyId, sortMode)
+            Result.success(copyId)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
