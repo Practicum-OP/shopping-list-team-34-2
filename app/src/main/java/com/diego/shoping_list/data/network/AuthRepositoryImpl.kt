@@ -10,6 +10,7 @@ import com.diego.shoping_list.domain.mapper.toDomain
 import com.diego.shoping_list.domain.mapper.toSession
 import com.diego.shoping_list.domain.model.AuthError
 import com.diego.shoping_list.domain.model.AuthSession
+import com.diego.shoping_list.domain.model.AuthTokens
 import com.diego.shoping_list.domain.model.DomainResult
 import com.diego.shoping_list.domain.repository.AuthRepository
 import com.google.gson.Gson
@@ -27,8 +28,12 @@ class AuthRepositoryImpl(
     override suspend fun login(email: String, password: String ): DomainResult<AuthSession> =
         safeCall { api.login(AuthRequest(email, password)) }.toDomain { it.toSession() }
 
-    override suspend fun refresh(refreshToken: String): DomainResult<AuthSession> =
-        safeCall { api.refresh(RefreshRequest(refreshToken)) }.toDomain { it.toSession(userId = -1) }
+    override suspend fun refresh(
+        refreshToken: String
+    ): DomainResult<AuthTokens> =
+        safeCall {
+            api.refresh(RefreshRequest(refreshToken))
+        }.toDomain { it.toDomain() }
 
     override suspend fun check(accessToken: String?): DomainResult<Boolean> =
         when (val result = safeCall { api.check(accessToken) }) {
