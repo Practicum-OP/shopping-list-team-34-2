@@ -8,6 +8,8 @@ data class ProductsUiState(
     val isAddSheetVisible: Boolean = false,
     val isMenuSheetVisible: Boolean = false,
     val isDeleteAllDialogVisible: Boolean = false,
+    val isDeleteProductDialogVisible: Boolean = false,
+    val productToDelete: Product? = null,
     val isClearCheckedDialogVisible: Boolean = false,
     val addForm: AddProductFormState = AddProductFormState(),
     val sortMode: SortMode = SortMode.ALPHABETICAL,

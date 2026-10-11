@@ -2,6 +2,7 @@ package com.diego.shoping_list.data.database.mapper
 
 import com.diego.shoping_list.data.database.entities.ProductInListEntity
 import com.diego.shoping_list.domain.model.Product
+import com.diego.shoping_list.domain.model.ProductUnit
 
 object ProductMapper {
     fun productMapFromEntity(product: ProductInListEntity): Product {
@@ -10,7 +11,7 @@ object ProductMapper {
             listId = product.listId,
             name = product.name,
             quantity = product.quantity,
-            unit = product.unit,
+            unit = product.unit?.let { runCatching { ProductUnit.valueOf(it) }.getOrNull() },
             isChecked = product.isChecked,
             positionInList = product.positionInList
         )
@@ -22,7 +23,7 @@ object ProductMapper {
             listId = product.listId,
             name = product.name,
             quantity = product.quantity,
-            unit = product.unit,
+            unit = product.unit?.name,
             isChecked = product.isChecked,
             positionInList = product.positionInList
         )

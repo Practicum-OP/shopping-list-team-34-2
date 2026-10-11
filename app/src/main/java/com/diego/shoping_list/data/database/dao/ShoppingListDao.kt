@@ -32,8 +32,9 @@ interface ShoppingListDao {
     suspend fun getById(id: Long): ShoppingListEntity?
 
     @Query("""
-        INSERT INTO product_in_list_table (listId, name, quantity, unit, isChecked)
-        SELECT :targetListId, name, quantity, unit, isChecked
+        INSERT INTO product_in_list_table
+            (listId, name, quantity, unit, isChecked, positionInList)
+        SELECT :targetListId, name, quantity, unit, isChecked, positionInList
         FROM product_in_list_table WHERE listId = :sourceListId
     """)
     suspend fun copyProducts(sourceListId: Long, targetListId: Long)
