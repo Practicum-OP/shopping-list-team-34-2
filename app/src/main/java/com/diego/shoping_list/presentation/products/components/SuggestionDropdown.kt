@@ -17,14 +17,13 @@ import com.diego.shoping_list.presentation.common.AppDropdownMenuItem
 fun SuggestionDropdown(
     expanded: Boolean,
     suggestions: List<ProductSuggestion>,
-    onSuggestionClick: (ProductSuggestion) -> Unit,
-    onDismiss: () -> Unit,
+    actions: SuggestionDropdownActions,
     modifier: Modifier = Modifier,
     maxHeight: Dp = 256.dp,
 ) {
     AppDropdownMenu(
         expanded = expanded,
-        onDismissRequest = onDismiss,
+        onDismissRequest = actions.onDismiss,
         modifier = modifier,
         properties = PopupProperties(focusable = false),
     ) {
@@ -36,9 +35,14 @@ fun SuggestionDropdown(
             suggestions.forEach { suggestion ->
                 AppDropdownMenuItem(
                     text = suggestion.name,
-                    onClick = { onSuggestionClick(suggestion) }
+                    onClick = { actions.onSuggestionClick(suggestion) }
                 )
             }
         }
     }
 }
+
+data class SuggestionDropdownActions(
+    val onSuggestionClick: (ProductSuggestion) -> Unit,
+    val onDismiss: () -> Unit
+)

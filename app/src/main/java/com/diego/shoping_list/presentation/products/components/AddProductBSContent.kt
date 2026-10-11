@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,9 +58,7 @@ fun AddProductBottomSheetContent(
         query = state.name,
         editingProduct = state.editingProduct,
         onQuerySuggestions = onQuerySuggestions,
-        lastSelected = sugg.lastSelected,
-        onSuggestions = { sugg.suggestions = it },
-        onShowSuggestions = { sugg.showSuggestions = it }
+        state = sugg
     )
 
     val quantityValue = state.quantity.toIntOrNull()
@@ -74,38 +73,51 @@ fun AddProductBottomSheetContent(
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            ProductNameField(
-                value = state.name,
-                error = state.nameError,
-                showSuggestions = sugg.showSuggestions,
-                suggestions = sugg.suggestions,
-                onValueChange = { onEvent(AddProductEvent.NameChange(it)) },
-                onSuggestionClick = { suggestion ->
-                    sugg.lastSelected = suggestion.name
-                    onEvent(AddProductEvent.SuggestionSelected(suggestion))
-                    sugg.suggestions = emptyList()
-                    sugg.showSuggestions = false
-                },
-                onDismiss = { sugg.showSuggestions = false }
-            )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                ProductNameField(
+                    value = state.name,
+                    error = state.nameError,
+                    onValueChange = { onEvent(AddProductEvent.NameChange(it)) },
+                    onFocusLost = { sugg.showSuggestions = false }
+                )
+
+                SuggestionDropdown(
+                    expanded = sugg.showSuggestions,
+                    suggestions = sugg.suggestions,
+                    actions = SuggestionDropdownActions(
+                        onSuggestionClick = { suggestion ->
+                            sugg.lastSelected = suggestion.name
+                            onEvent(AddProductEvent.SuggestionSelected(suggestion))
+                            sugg.suggestions = emptyList()
+                            sugg.showSuggestions = false
+                        },
+                        onDismiss = { sugg.showSuggestions = false }
+                    ),
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    maxHeight = MAX_RESERVED_HEIGHT - MENU_VERTICAL_MARGIN * 2
+                )
+            }
 
             Spacer(Modifier.height(8.dp))
 
             QuantityAndUnitRow(
-                quantity = state.quantity,
-                quantityError = state.quantityError,
-                unit = state.unit,
-                decrementEnabled = decrementEnabled,
-                incrementEnabled = incrementEnabled,
-                onQuantityChange = { onEvent(AddProductEvent.QuantityChange(it)) },
-                onUnitChange = { onEvent(AddProductEvent.UnitChange(it)) },
-                onUnitExpandedChange = { open ->
-                    overlayController.openOverlay = if (open) Overlay.UnitMenu else null
-                    if (open) sugg.showSuggestions = false
-                },
-                onDecrement = { onEvent(AddProductEvent.Decrement) },
-                onIncrement = { onEvent(AddProductEvent.Increment) }
-            )
+                state = QuantityUnitState(
+                    quantity = state.quantity,
+                    quantityError = state.quantityError,
+                    unit = state.unit,
+                    decrementEnabled = decrementEnabled,
+                    incrementEnabled = incrementEnabled
+                ),
+                actions = QuantityUnitActions(
+                    onQuantityChange = { onEvent(AddProductEvent.QuantityChange(it)) },
+                    onUnitChange = { onEvent(AddProductEvent.UnitChange(it)) },
+                    onUnitExpandedChange = { open ->
+                        overlayController.openOverlay = if (open) Overlay.UnitMenu else null
+                        if (open) sugg.showSuggestions = false
+                    },
+                    onDecrement = { onEvent(AddProductEvent.Decrement) },
+                    onIncrement = { onEvent(AddProductEvent.Increment) }
+                ))
 
             if (overlayController.openOverlay != null) {
                 Spacer(Modifier.height(overlayLift))
@@ -132,6 +144,7 @@ private fun shouldSkipSearch(
             query == editingProduct?.name ||
             query == lastSelected
 
+@Stable
 private class SuggestionState(
     initial: List<ProductSuggestion> = emptyList(),
 ) {
@@ -149,21 +162,19 @@ private fun SuggestionSearchEffect(
     query: String,
     editingProduct: Product?,
     onQuerySuggestions: (String) -> Flow<List<ProductSuggestion>>,
-    lastSelected: String?,
-    onSuggestions: (List<ProductSuggestion>) -> Unit,
-    onShowSuggestions: (Boolean) -> Unit
+    state: SuggestionState
 ) {
     LaunchedEffect(query, editingProduct?.id) {
-        if (shouldSkipSearch(query, editingProduct, lastSelected)) {
-            onSuggestions(emptyList())
-            onShowSuggestions(false)
+        if (shouldSkipSearch(query, editingProduct, state.lastSelected)) {
+            state.suggestions = emptyList()
+            state.showSuggestions = false
             return@LaunchedEffect
         }
 
         delay(200.milliseconds)
         onQuerySuggestions(query).collect { list ->
-            onSuggestions(list)
-            onShowSuggestions(list.isNotEmpty())
+            state.suggestions = list
+            state.showSuggestions = list.isNotEmpty()
         }
     }
 }
@@ -210,58 +221,34 @@ private fun rememberOverlayController(
 private fun ProductNameField(
     value: String,
     error: String?,
-    showSuggestions: Boolean,
-    suggestions: List<ProductSuggestion>,
     onValueChange: (String) -> Unit,
-    onSuggestionClick: (ProductSuggestion) -> Unit,
-    onDismiss: () -> Unit
+    onFocusLost: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(stringResource(R.string.name_label)) },
-            isError = error != null,
-            supportingText = error?.let { { Text(it) } },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { focus ->
-                    if (!focus.isFocused && showSuggestions) onDismiss()
-                }
-        )
-
-        SuggestionDropdown(
-            expanded = showSuggestions,
-            suggestions = suggestions,
-            onSuggestionClick = onSuggestionClick,
-            onDismiss = onDismiss,
-            modifier = Modifier.fillMaxWidth(0.9f),
-            maxHeight = MAX_RESERVED_HEIGHT - MENU_VERTICAL_MARGIN * 2,
-        )
-    }
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(stringResource(R.string.name_label)) },
+        isError = error != null,
+        supportingText = error?.let { { Text(it) } },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        modifier = Modifier
+            .fillMaxWidth()
+            .onFocusChanged { focus -> if (!focus.isFocused) onFocusLost() }
+    )
 }
 
 @Composable
 private fun QuantityAndUnitRow(
-    quantity: String,
-    quantityError: String?,
-    unit: ProductUnit?,
-    decrementEnabled: Boolean,
-    incrementEnabled: Boolean,
-    onQuantityChange: (String) -> Unit,
-    onUnitChange: (ProductUnit) -> Unit,
-    onUnitExpandedChange: (Boolean) -> Unit,
-    onDecrement: () -> Unit,
-    onIncrement: () -> Unit
+    state: QuantityUnitState,
+    actions: QuantityUnitActions
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         OutlinedTextField(
-            value = quantity,
-            onValueChange = onQuantityChange,
+            value = state.quantity,
+            onValueChange = actions.onQuantityChange,
             label = { Text(stringResource(R.string.quantity_label)) },
-            isError = quantityError != null,
+            isError = state.quantityError != null,
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
@@ -273,21 +260,21 @@ private fun QuantityAndUnitRow(
         Spacer(Modifier.width(8.dp))
 
         UnitDropdown(
-            unit = unit,
-            onUnitChange = onUnitChange,
-            onExpandedChange = onUnitExpandedChange,
+            unit = state.unit,
+            onUnitChange = actions.onUnitChange,
+            onExpandedChange = actions.onUnitExpandedChange,
             modifier = Modifier.width(100.dp)
         )
 
         QuantityStepperButton(
-            enabled = decrementEnabled,
-            iconRes = if (decrementEnabled) R.drawable.ic_decrease_on else R.drawable.ic_decrease_off,
-            onClick = onDecrement
+            enabled = state.decrementEnabled,
+            iconRes = if (state.decrementEnabled) R.drawable.ic_decrease_on else R.drawable.ic_decrease_off,
+            onClick = actions.onDecrement
         )
         QuantityStepperButton(
-            enabled = incrementEnabled,
+            enabled = state.incrementEnabled,
             iconRes = R.drawable.ic_increase,
-            onClick = onIncrement
+            onClick = actions.onIncrement
         )
     }
 }
@@ -306,6 +293,24 @@ private fun QuantityStepperButton(
         )
     }
 }
+
+@Stable
+private data class QuantityUnitState(
+    val quantity: String,
+    val quantityError: String?,
+    val unit: ProductUnit?,
+    val decrementEnabled: Boolean,
+    val incrementEnabled: Boolean
+)
+
+@Stable
+private data class QuantityUnitActions(
+    val onQuantityChange: (String) -> Unit,
+    val onUnitChange: (ProductUnit) -> Unit,
+    val onUnitExpandedChange: (Boolean) -> Unit,
+    val onDecrement: () -> Unit,
+    val onIncrement: () -> Unit
+)
 
 private const val MIN_QUANTITY = 1
 private const val MAX_QUANTITY = 999

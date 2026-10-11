@@ -4,18 +4,16 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diego.shoping_list.data.settings.SortModeRepository
-import com.diego.shoping_list.domain.SortMode
 import com.diego.shoping_list.domain.api.ProductInListInteractor
 import com.diego.shoping_list.domain.model.Product
 import com.diego.shoping_list.domain.model.ProductSuggestion
-import com.diego.shoping_list.domain.model.ProductUnit
 import com.diego.shoping_list.presentation.common.AppLogger
-import com.diego.shoping_list.presentation.products.stateitems.AddProductEvent
-import com.diego.shoping_list.presentation.products.stateitems.AddProductFormState
+import com.diego.shoping_list.presentation.products.handlers.AddProductFormHandler
+import com.diego.shoping_list.presentation.products.handlers.HandlerContext
+import com.diego.shoping_list.presentation.products.handlers.ProductsMenuHandler
 import com.diego.shoping_list.presentation.products.stateitems.ProductsEffect
 import com.diego.shoping_list.presentation.products.stateitems.ProductsError
 import com.diego.shoping_list.presentation.products.stateitems.ProductsIntent
-import com.diego.shoping_list.presentation.products.stateitems.ProductsMenuEvent
 import com.diego.shoping_list.presentation.products.stateitems.ProductsToast
 import com.diego.shoping_list.presentation.products.stateitems.ProductsUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,8 +46,25 @@ class ProductsViewModel(
     private val _effect = Channel<ProductsEffect>(Channel.BUFFERED)
     val effect: Flow<ProductsEffect> = _effect.receiveAsFlow()
 
-    private val minQuantity = 1
-    private val maxQuantity = 999
+    private val handlerContext = HandlerContext(
+        scope = viewModelScope,
+        readState = { _state.value },
+        updateState = { transform -> _state.update(transform) },
+        sendEffect = { effect -> _effect.send(effect) }
+    )
+
+    private val formHandler = AddProductFormHandler(
+        interactor = interactor,
+        listId = listId,
+        context = handlerContext
+    )
+
+    private val menuHandler = ProductsMenuHandler(
+        interactor = interactor,
+        sortModeRepository = sortModeRepository,
+        listId = listId,
+        context = handlerContext
+    )
 
     init {
         observeProducts()
@@ -57,14 +72,14 @@ class ProductsViewModel(
 
     fun onIntent(intent: ProductsIntent) {
         when (intent) {
-            ProductsIntent.AddProductClick -> onAddProductClick()
-            ProductsIntent.DismissAddProduct -> onDismissAddProduct()
-            ProductsIntent.ProductMenuClick -> onProductMenuClick()
-            ProductsIntent.DismissProductMenu -> onDismissProductMenu()
+            ProductsIntent.AddProductClick -> formHandler.onAddProductClick()
+            ProductsIntent.DismissAddProduct -> formHandler.onDismissAddProduct()
+            ProductsIntent.ProductMenuClick -> menuHandler.onProductMenuClick()
+            ProductsIntent.DismissProductMenu -> menuHandler.onDismissProductMenu()
 
-            is ProductsIntent.AddProduct -> onAddProductEvent(intent.event)
+            is ProductsIntent.AddProduct -> formHandler.onAddProductEvent(intent.event)
 
-            is ProductsIntent.Menu -> onProductMenuEvent(intent.event)
+            is ProductsIntent.Menu -> menuHandler.onProductMenuEvent(intent.event)
 
             is ProductsIntent.ProductCheckedChange ->
                 onProductCheckedChange(intent.product, intent.checked)
@@ -95,201 +110,6 @@ class ProductsViewModel(
             }
             .launchIn(viewModelScope)
     }
-
-    // -----
-
-    private fun onAddProductClick() {
-        _state.update {
-            it.copy(
-                isAddSheetVisible = true,
-                addForm = AddProductFormState()
-            )
-        }
-    }
-
-    private fun onDismissAddProduct() {
-        _state.update {
-            it.copy(
-                isAddSheetVisible = false,
-                addForm = AddProductFormState()
-            )
-        }
-    }
-
-    private fun onProductMenuClick() {
-        _state.update {
-            it.copy(
-                isMenuSheetVisible = true
-            )
-        }
-    }
-
-    private fun onDismissProductMenu() {
-        _state.update {
-            it.copy(
-                isMenuSheetVisible = false
-            )
-        }
-    }
-
-    // -----
-
-    private fun onAddProductEvent(event: AddProductEvent) {
-        when (event) {
-            is AddProductEvent.NameChange -> onNameChange(event.value)
-            is AddProductEvent.QuantityChange -> onQuantityChange(event.value)
-            is AddProductEvent.UnitChange -> onUnitChange(event.value)
-            is AddProductEvent.SuggestionSelected -> onSuggestionSelected(event.suggestion)
-            is AddProductEvent.EditProduct -> onEditProduct(event.productId)
-            AddProductEvent.Increment -> onIncrement()
-            AddProductEvent.Decrement -> onDecrement()
-            AddProductEvent.Submit -> submitProduct()
-            AddProductEvent.Reset -> onResetForm()
-        }
-    }
-
-    private fun onNameChange(value: String) {
-        _state.update {
-            it.copy(addForm = it.addForm.copy(name = value, nameError = null))
-        }
-    }
-
-    private fun onQuantityChange(value: String) {
-        val digits = value
-            .filter { it.isDigit() }
-            .take(maxQuantity.toString().length)
-        _state.update {
-            it.copy(addForm = it.addForm.copy(quantity = digits, quantityError = null))
-        }
-    }
-
-    private fun onUnitChange(unit: ProductUnit) {
-        _state.update {
-            it.copy(addForm = it.addForm.copy(unit = unit))
-        }
-    }
-
-    private fun onSuggestionSelected(suggestion: ProductSuggestion) {
-        _state.update { state ->
-            state.copy(
-                addForm = state.addForm.copy(
-                    name = suggestion.name,
-                    unit = suggestion.defaultUnit
-                )
-            )
-        }
-    }
-
-    private fun onEditProduct(productId: Long) {
-        val fresh = _state.value.products.find { it.id == productId } ?: return
-        _state.update {
-            it.copy(
-                isAddSheetVisible = true,
-                addForm = AddProductFormState(
-                    editingProduct = fresh,
-                    name = fresh.name,
-                    quantity = fresh.quantity.toString(),
-                    unit = fresh.unit
-                )
-            )
-        }
-    }
-
-    private fun onIncrement() {
-        _state.update { state ->
-            val current = state.addForm.quantity.toIntOrNull()
-            val next = if (current == null) 1 else (current + 1).coerceAtMost(maxQuantity)
-            state.copy(
-                addForm = state.addForm.copy(
-                    quantity = next.toString(),
-                    quantityError = null
-                )
-            )
-        }
-    }
-
-    private fun onDecrement() {
-        _state.update { state ->
-            val current = state.addForm.quantity.toIntOrNull() ?: return@update state
-            val next = (current - 1).coerceIn(minQuantity, maxQuantity)
-            state.copy(addForm = state.addForm.copy(quantity = next.toString()))
-        }
-    }
-
-    private fun onResetForm() {
-        _state.update { it.copy(addForm = AddProductFormState()) }
-    }
-
-    private fun submitProduct() {
-        val form = _state.value.addForm
-
-        val nameError = if (form.name.isBlank()) "Введите название" else null
-        val qty = form.quantity.toIntOrNull()
-        val quantityError = when {
-            qty == null -> "Введите количество"
-            qty !in minQuantity..maxQuantity -> "От $minQuantity до $maxQuantity"
-            else -> null
-        }
-
-        if (nameError != null || quantityError != null) {
-            _state.update {
-                it.copy(
-                    addForm = it.addForm.copy(
-                        nameError = nameError,
-                        quantityError = quantityError
-                    )
-                )
-            }
-            return
-        }
-
-        val qtyValue = qty ?: return
-
-        Submitting(form, qtyValue)
-    }
-
-    private fun Submitting(form: AddProductFormState, qtyValue: Int) {
-        _state.update { it.copy(addForm = it.addForm.copy(isSubmitting = true)) }
-
-        viewModelScope.launch {
-            try {
-                val editing = form.editingProduct
-                if (editing == null) {
-                    interactor.addProduct(
-                        listId = listId,
-                        name = form.name,
-                        quantity = qtyValue,
-                        unit = form.unit
-                    )
-                } else {
-                    interactor.updateProduct(
-                        editing.copy(
-                            name = form.name,
-                            quantity = qtyValue,
-                            unit = form.unit
-                        )
-                    )
-                }
-                _state.update {
-                    it.copy(
-                        isAddSheetVisible = false,
-                        addForm = AddProductFormState(),
-                    )
-                }
-                _effect.send(ProductsEffect.ShowToast(ProductsToast.ProductSaved))
-            } catch (ce: CancellationException) {
-                throw ce
-            } catch (t: Throwable) {
-                AppLogger.e(t, "submitProduct failed")
-                _state.update {
-                    it.copy(addForm = it.addForm.copy(isSubmitting = false))
-                }
-                _effect.send(ProductsEffect.ShowError(ProductsError.SaveFailed))
-            }
-        }
-    }
-
-    // -----
 
     private fun onProductCheckedChange(product: Product, checked: Boolean) {
         viewModelScope.launch {
@@ -367,89 +187,6 @@ class ProductsViewModel(
         val list = _state.value.products.toMutableList()
         list.add(to, list.removeAt(from))
         _state.update { it.copy(products = list) }
-    }
-
-    //  -----
-
-    private fun onProductMenuEvent(event: ProductsMenuEvent) {
-        when (event) {
-            ProductsMenuEvent.DeleteAll -> menuEventDeleteAll()
-            ProductsMenuEvent.ClearChecked -> menuEventClearChecked()
-            ProductsMenuEvent.ConfirmDeleteAll -> menuEventConfirmDeleteAll()
-            ProductsMenuEvent.DismissDeleteAllDialog -> menuEventDismissDeleteAllDialog()
-            ProductsMenuEvent.ConfirmClearChecked -> menuEventConfirmClearChecked()
-            ProductsMenuEvent.DismissClearCheckedDialog -> menuEventDismissClearCheckedDialog()
-            ProductsMenuEvent.SortByAlphabet -> menuEventSortByAlphabet()
-            ProductsMenuEvent.SortByUser -> menuEventSortByUser()
-        }
-    }
-
-    private fun menuEventDeleteAll() {
-        _state.update {
-            it.copy(
-                isMenuSheetVisible = false,
-                isDeleteAllDialogVisible = true
-            )
-        }
-    }
-
-    private fun menuEventClearChecked() {
-        _state.update {
-            it.copy(
-                isMenuSheetVisible = false,
-                isClearCheckedDialogVisible = true
-            )
-        }
-    }
-
-    private fun menuEventConfirmDeleteAll() {
-        _state.update { it.copy(isDeleteAllDialogVisible = false) }
-        viewModelScope.launch {
-            try {
-                interactor.deleteAllInList(listId)
-            } catch (ce: CancellationException) {
-                throw ce
-            } catch (t: Throwable) {
-                AppLogger.e(t, "deleteAllInList(\${listId}) failed")
-                _effect.send(ProductsEffect.ShowError(ProductsError.DeleteFailed))
-            }
-        }
-    }
-
-    private fun menuEventDismissDeleteAllDialog() {
-        _state.update { it.copy(isDeleteAllDialogVisible = false) }
-    }
-
-    private fun menuEventConfirmClearChecked() {
-        _state.update { it.copy(isClearCheckedDialogVisible = false) }
-        viewModelScope.launch {
-            try {
-                interactor.deleteCheckedInList(listId)
-            } catch (ce: CancellationException) {
-                throw ce
-            } catch (t: Throwable) {
-                AppLogger.e(t, "deleteCheckedInList(\${listId}) failed")
-                _effect.send(ProductsEffect.ShowError(ProductsError.DeleteFailed))
-            }
-        }
-    }
-
-    private fun menuEventDismissClearCheckedDialog() {
-        _state.update { it.copy(isClearCheckedDialogVisible = false) }
-    }
-
-    private fun menuEventSortByAlphabet() {
-        onSortModeChange(SortMode.ALPHABETICAL)
-        onDismissProductMenu()
-    }
-
-    private fun menuEventSortByUser() {
-        onSortModeChange(SortMode.MANUAL)
-        onDismissProductMenu()
-    }
-
-    private fun onSortModeChange(mode: SortMode) {
-        viewModelScope.launch { sortModeRepository.save(listId, mode) }
     }
 
     fun suggestionsFor(query: String): Flow<List<ProductSuggestion>> =

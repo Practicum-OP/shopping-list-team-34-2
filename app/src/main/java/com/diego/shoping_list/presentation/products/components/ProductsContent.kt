@@ -75,11 +75,12 @@ fun ProductsContent(
                 productsList = state.products,
                 openItemId = openSwipeItemId,
                 onOpenItemChange = onOpenItemChange,
-                onEdit = { product -> onEditProduct(product.id) },
-                onDelete = { product -> onIntent(ProductsIntent.DeleteProduct(product)) },
-                onToggleChecked = { product, checked ->
-                    onIntent(ProductsIntent.ProductCheckedChange(product, checked))
-                }
+                actions = ProductItemActions(
+                    onEdit = { product -> onEditProduct(product.id) },
+                    onDelete = { product -> onIntent(ProductsIntent.DeleteProduct(product)) },
+                    onToggleChecked = { product, checked ->
+                        onIntent(ProductsIntent.ProductCheckedChange(product, checked))
+                    })
             )
         }
     }
@@ -118,9 +119,7 @@ private fun ShowProductList(
     productsList: List<Product>,
     openItemId: String?,
     onOpenItemChange: (String?) -> Unit,
-    onEdit: (Product) -> Unit,
-    onDelete: (Product) -> Unit,
-    onToggleChecked: (Product, Boolean) -> Unit
+    actions: ProductItemActions
 ) {
     LazyColumn(
         modifier = Modifier
@@ -134,17 +133,23 @@ private fun ShowProductList(
                     openItemId = openItemId,
                     onOpenItemChange = onOpenItemChange
                 ),
-                onEdit = { onEdit(product) },
-                onDelete = { onDelete(product) }
+                onEdit = { actions.onEdit(product) },
+                onDelete = { actions.onDelete(product) }
             ) {
                 ProductItem(
                     product,
-                    onToggleChecked = { checked -> onToggleChecked(product, checked) }
+                    onToggleChecked = { checked -> actions.onToggleChecked(product, checked) }
                 )
             }
         }
     }
 }
+
+data class ProductItemActions(
+    val onEdit: (Product) -> Unit,
+    val onDelete: (Product) -> Unit,
+    val onToggleChecked: (Product, Boolean) -> Unit
+)
 
 @Composable
 private fun ReorderableProductList(
