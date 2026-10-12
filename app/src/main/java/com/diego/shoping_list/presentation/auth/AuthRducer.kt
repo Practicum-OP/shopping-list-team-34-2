@@ -5,54 +5,78 @@ import android.util.Patterns
 const val MIN_PASSWORD_LENGTH = 7
 
 fun AuthState.reduce(intent: AuthIntent): AuthState = when (intent) {
-    is AuthIntent.EmailChanged -> copy(
-        email = intent.value,
-        emailError = validateEmail(intent.value),
-        generalError = null,
-    )
-
-    is AuthIntent.PasswordChanged -> copy(
-        password = intent.value,
-        passwordError = validatePassword(
-            password = intent.value,
-            confirm = confirmPassword,
-            screen = screen,
-        ),
-        generalError = null,
-    )
-
-    is AuthIntent.ConfirmPasswordChanged -> copy(
-        confirmPassword = intent.value,
-        passwordError = validatePassword(
-            password = password,
-            confirm = intent.value,
-            screen = screen,
-        ),
-    )
-
-    is AuthIntent.RememberMeChanged -> copy(
-        rememberMe = intent.value
-    )
-
-    is AuthIntent.EmailFocusChanged -> if (!intent.isFocused && email.isNotBlank()) {
-        copy(emailError = validateEmail(email))
-    } else this
-
-    is AuthIntent.PasswordFocusChanged -> if (!intent.isFocused && password.isNotBlank()) {
-        copy(passwordError = validatePassword(password, confirmPassword, screen))
-    } else this
-
-    AuthIntent.TogglePasswordVisibility -> copy(isPasswordVisible = !isPasswordVisible)
-
-    AuthIntent.Submit -> copy(isLoading = true, generalError = null)
-
-    is AuthIntent.SwitchScreen -> AuthState(
-        screen = intent.screen,
-        email = email,
-    )
-
-    AuthIntent.ErrorShown -> copy(generalError = null)
+    is AuthIntent.EmailChanged -> reduceEmailChanged(intent.value)
+    is AuthIntent.PasswordChanged -> reducePasswordChanged(intent.value)
+    is AuthIntent.ConfirmPasswordChanged -> reduceConfirmPasswordChanged(intent.value)
+    is AuthIntent.RememberMeChanged -> reduceRememberMeChanged(intent.value)
+    is AuthIntent.EmailFocusChanged -> reduceEmailFocusChanged(intent.isFocused)
+    is AuthIntent.PasswordFocusChanged -> reducePasswordFocusChanged(intent.isFocused)
+    AuthIntent.TogglePasswordVisibility -> reduceTogglePasswordVisibility()
+    AuthIntent.Submit -> reduceSubmit()
+    is AuthIntent.SwitchScreen -> reduceSwitchScreen(intent.screen)
+    AuthIntent.ErrorShown -> reduceErrorShown()
 }
+
+private fun AuthState.reduceEmailChanged(value: String): AuthState = copy(
+    email = value,
+    emailError = validateEmail(value),
+    generalError = null,
+)
+
+private fun AuthState.reducePasswordChanged(value: String): AuthState = copy(
+    password = value,
+    passwordError = validatePassword(
+        password = value,
+        confirm = confirmPassword,
+        screen = screen,
+    ),
+    generalError = null,
+)
+
+private fun AuthState.reduceConfirmPasswordChanged(value: String): AuthState = copy(
+    confirmPassword = value,
+    passwordError = validatePassword(
+        password = password,
+        confirm = value,
+        screen = screen,
+    ),
+)
+
+private fun AuthState.reduceRememberMeChanged(value: Boolean): AuthState = copy(
+    rememberMe = value,
+)
+
+private fun AuthState.reduceEmailFocusChanged(isFocused: Boolean): AuthState =
+    if (!isFocused && email.isNotBlank()) {
+        copy(emailError = validateEmail(email))
+    } else {
+        this
+    }
+
+private fun AuthState.reducePasswordFocusChanged(isFocused: Boolean): AuthState =
+    if (!isFocused && password.isNotBlank()) {
+        copy(passwordError = validatePassword(password, confirmPassword, screen))
+    } else {
+        this
+    }
+
+private fun AuthState.reduceTogglePasswordVisibility(): AuthState = copy(
+    isPasswordVisible = !isPasswordVisible,
+)
+
+private fun AuthState.reduceSubmit(): AuthState = copy(
+    isLoading = true,
+    generalError = null,
+)
+
+private fun AuthState.reduceSwitchScreen(newScreen: AuthScreens): AuthState = AuthState(
+    screen = newScreen,
+    email = email,
+)
+
+private fun AuthState.reduceErrorShown(): AuthState = copy(
+    generalError = null,
+)
 
 private fun validateEmail(value: String): String? = when {
     value.isBlank() -> null
