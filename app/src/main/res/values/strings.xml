@@ -1,3 +1,77 @@
 <resources>
     <string name="app_name">Shoping_list</string>
+
+    <string name="action_back">Назад</string>
+    <string name="action_search">Поиск</string>
+    <string name="action_clear_search">Очистить поиск</string>
+    <string name="shopping_list_search_hint">Поиск списков</string>
+    <string name="shopping_list_search_not_found_title">Мы не смогли найти то,\nчто вы искали</string>
+    <string name="shopping_list_search_not_found_subtitle">Попробуйте изменить запрос\nили проверить написание</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_rename">Переименовать</string>
+    <string name="action_copy">Копировать</string>
+    <string name="action_toggle_theme">Сменить тему</string>
+    <string name="action_add_list">Создать список</string>
+
+    <string name="shopping_list_title">Мои списки</string>
+    <string name="shopping_list_empty_title">У вас пока нет списков</string>
+    <string name="shopping_list_change_icon">Сменить иконку</string>
+    <string name="shopping_list_delete_all_title">Удалить все списки?</string>
+    <string name="shopping_list_empty_subtitle">Нажмите на кнопку + ниже, чтобы создать свой первый список</string>
+    <string name="shopping_title_dialog">Добавление списка</string>
+    <string name="shopping_edit_dialog">Название списка</string>
+    <string name="shopping_hint_dialog">Новый список</string>
+    <string name="cancel_dialog">Отмена</string>
+    <string name="create_dialog">Создать</string>
+    <string name="delete_list">Удалить список\n«%1$s»?</string>
+
+    <string name="product_screen_title">Продукты</string>
+    <string name="products_menu_icon_description">Меню</string>
+    <string name="products_dialog_delete_product">Удалить «%1$s»?</string>
+    <string name="products_dialog_delete_all">Удалить все товары?</string>
+    <string name="products_dialog_clear_checked">Удалить все купленные товары?</string>
+    <string name="product_list_empty">В списке покупок пока пусто</string>
+    <string name="products_menu_sorting">Сортировка</string>
+    <string name="products_menu_sort_by_alphabet">По алфавиту</string>
+    <string name="products_menu_sort_by_user">Пользовательская</string>
+    <string name="products_menu_delete_all">Удалить все</string>
+    <string name="products_menu_clear_checked">Очистить купленные</string>
+
+    <string name="name_label">Название продукта</string>
+    <string name="quantity_label">Кол-во</string>
+    <string name="unit_label">Ед.</string>
+    <string name="cd_sort">Сортировка</string>
+    <string name="cd_checked">Выбрано</string>
+    <string name="cd_unchecked">Не выбрано</string>
+    <string name="unit_liter">л</string>
+    <string name="unit_milliliter">мл</string>
+    <string name="unit_pack">уп</string>
+    <string name="unit_packet">пач</string>
+    <string name="unit_piece">шт</string>
+    <string name="unit_kilogram">кг</string>
+    <string name="unit_gram">гр</string>
+
+    <string name="button_delete_default_text">Удалить</string>
+    <string name="button_cancel_default_text">Отмена</string>
+
+    <string name="error_save_product">Не удалось сохранить продукт</string>
+    <string name="error_delete_product">Не удалось удалить продукт</string>
+    <string name="error_save_order">Не удалось сохранить порядок</string>
+    <string name="error_unknown">Что-то пошло не так</string>
+
+    <string name="toast_product_saved">Сохранено</string>
+    <string name="toast_product_deleted">Удалено</string>
+    <string name="account_logout">Выход</string>
+    <string name="enter">Вход</string>
+    <string name="enter_your_email_and_password_for_login">Введите ваш email и пароль для входа</string>
+    <string name="remember_me">Запомнить меня</string>
+    <string name="forgot_your_password">Забыли пароль?</string>
+    <string name="do_not_have_an_account">"Нет аккаунта? "</string>
+    <string name="registration">Регистрация</string>
+    <string name="recovery_password">Восстановление пароля</string>
+    <string name="enter_email_used_during_registration">Введите email, указанный при регистрации</string>
+    <string name="already_have_account">Уже есть аккаунт?</string>
+    <string name="creatr_your_account">Создайте ваш аккаунт</string>
+    <string name="reset_password">Восстановить пароль</string>
+    <string name="return_to_the_entrance">Вернуться ко входу</string>
 </resources>
