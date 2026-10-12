@@ -42,4 +42,5 @@ data class AuthState(
 sealed interface AuthEffect {
     data class ShowSnackbar(val message: String) : AuthEffect
     data object NavigateToMain : AuthEffect
+    data object NavigateToAuth : AuthEffect
 }

@@ -49,6 +49,7 @@ fun AuthScreen(
             when (effect) {
                 is AuthEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
                 is AuthEffect.NavigateToMain -> onAuthSuccess()
+                is AuthEffect.NavigateToAuth -> {}
             }
         }
     }

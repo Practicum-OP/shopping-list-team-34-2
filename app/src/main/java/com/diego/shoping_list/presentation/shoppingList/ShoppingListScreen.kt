@@ -32,7 +32,8 @@ fun ShoppingListScreen(
     onToggleTheme: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ShoppingListViewModel = koinViewModel(),
-    onShoppingListClick: (Long) -> Unit
+    onShoppingListClick: (Long) -> Unit,
+    onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
@@ -64,6 +65,7 @@ fun ShoppingListScreen(
                 onSearchClick = { isSearchActive = true },
                 onDeleteClick = { showDeleteAllDialog = true },
                 onToggleTheme = onToggleTheme,
+                onLogout = onLogout
             )
         },
         floatingActionButton = { ShoppingListFab(onClick = { showAddDialog = true }) },

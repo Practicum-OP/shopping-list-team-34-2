@@ -1,9 +1,11 @@
 package com.diego.shoping_list.presentation.shoppingList.components
 
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.diego.shoping_list.R
+import com.diego.shoping_list.compose.icons.IconLogout
 import com.diego.shoping_list.presentation.common.AppBarIcon
 import com.diego.shoping_list.presentation.common.AppTopBar
 
@@ -13,6 +15,7 @@ fun ShoppingListTopBar(
     onSearchClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onToggleTheme: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     val themeModeIcon = if (isDarkTheme) {
         R.drawable.ic_theme_mode_dark
@@ -38,6 +41,12 @@ fun ShoppingListTopBar(
                 AppBarIcon(
                     iconResId = themeModeIcon,
                     contentDescription = stringResource(R.string.action_toggle_theme),
+                )
+            }
+            IconButton(onClick = onLogout) {
+                Icon(
+                    imageVector = IconLogout,
+                    contentDescription = stringResource(R.string.account_logout)
                 )
             }
         },

@@ -61,4 +61,5 @@
 
     <string name="toast_product_saved">Сохранено</string>
     <string name="toast_product_deleted">Удалено</string>
+    <string name="account_logout">Выход</string>
 </resources>
