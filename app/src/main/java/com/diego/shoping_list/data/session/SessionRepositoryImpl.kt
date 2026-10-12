@@ -54,6 +54,14 @@ class SessionRepositoryImpl(
         )
     }
 
+    override suspend fun saveRememberMe(remember: Boolean) {
+        localDataSource.saveRememberMe(remember)
+    }
+
+    override suspend fun shouldRememberMe(): Boolean {
+        return localDataSource.shouldRememberMe()
+    }
+
     override suspend fun clearSession() {
         localDataSource.clearSession()
     }

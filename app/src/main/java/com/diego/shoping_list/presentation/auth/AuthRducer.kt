@@ -30,6 +30,10 @@ fun AuthState.reduce(intent: AuthIntent): AuthState = when (intent) {
         ),
     )
 
+    is AuthIntent.RememberMeChanged -> copy(
+        rememberMe = intent.value
+    )
+
     is AuthIntent.EmailFocusChanged -> if (!intent.isFocused && email.isNotBlank()) {
         copy(emailError = validateEmail(email))
     } else this

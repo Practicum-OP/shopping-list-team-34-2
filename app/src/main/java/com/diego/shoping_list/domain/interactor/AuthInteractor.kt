@@ -26,18 +26,24 @@ class AuthInteractor(
 
     suspend fun login(
         email: String,
-        password: String
+        password: String,
+        rememberMe: Boolean
     ): DomainResult<AuthSession> {
         val result = authRepository.login(email.trim(), password)
 
         if (result is DomainResult.Success) {
             sessionRepository.saveSession(result.data)
+            sessionRepository.saveRememberMe(rememberMe)
         }
 
         return result
     }
 
     suspend fun restoreSession(): Boolean {
+        if (!sessionRepository.shouldRememberMe()) {
+            return false
+        }
+
         val session = sessionRepository.getSession() ?: return false
 
         val checkResult = authRepository.check(session.accessToken)

@@ -11,6 +11,8 @@ sealed interface AuthIntent {
     data object TogglePasswordVisibility : AuthIntent
     data class SwitchScreen(val screen: AuthScreens) : AuthIntent
     data object ErrorShown : AuthIntent
+
+    data class RememberMeChanged(val value: Boolean) : AuthIntent
 }
 
 data class AuthState(
@@ -23,6 +25,7 @@ data class AuthState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val generalError: String? = null,
+    val rememberMe: Boolean = false
 ) {
     val isSubmitEnabled: Boolean
         get() = when {

@@ -16,10 +16,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,8 +54,6 @@ fun LoginScreen(
             singlePasswordMode = true,
         )
 
-        var rememberMe by remember { mutableStateOf(false) }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -69,8 +63,10 @@ fun LoginScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
-                    checked = rememberMe,
-                    onCheckedChange = { rememberMe = it },
+                    checked = state.rememberMe,
+                    onCheckedChange = {
+                        onIntent(AuthIntent.RememberMeChanged(it))
+                    },
                 )
                 Text("Запомнить меня")
             }

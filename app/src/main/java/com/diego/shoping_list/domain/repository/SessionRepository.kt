@@ -14,5 +14,9 @@ interface SessionRepository {
         refreshToken: String
     ): AuthTokens
 
+    suspend fun saveRememberMe(remember: Boolean)
+
+    suspend fun shouldRememberMe(): Boolean
+
     suspend fun clearSession()
 }

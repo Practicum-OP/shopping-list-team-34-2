@@ -39,7 +39,11 @@ class AuthViewModel(
 
         viewModelScope.launch {
             val result = when (current.screen) {
-                AuthScreens.LOGIN -> interactor.login(current.email, current.password)
+                AuthScreens.LOGIN -> interactor.login(
+                    current.email,
+                    current.password,
+                    current.rememberMe
+                )
                 AuthScreens.REGISTRATION -> interactor.register(current.email, current.password)
             }
             handleResult(result, current.screen)
