@@ -14,12 +14,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -40,7 +40,7 @@ fun LoginScreen(
             .padding(horizontal = 16.dp)
             .padding(vertical = 120.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White.copy(alpha = 0.6f)),
+            .background(MaterialTheme.colorScheme.surfaceContainerLow),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -70,36 +70,43 @@ fun LoginScreen(
                         onIntent(AuthIntent.RememberMeChanged(it))
                     },
                 )
-                Text(stringResource(R.string.remember_me))
+                Text(
+                    stringResource(R.string.remember_me),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             Text(
                 text = stringResource(R.string.forgot_your_password),
-                color = Color.Blue,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .clickable {
                         onIntent(AuthIntent.SwitchScreen(AuthScreens.RECOVERY_PASSWORD))
                     }
-                    .padding(4.dp),
+                    .padding(end = 4.dp),
             )
         }
 
         Button(
             onClick = { onIntent(AuthIntent.Submit) },
-            enabled = state.isSubmitEnabled
+            enabled = state.isSubmitEnabled,
         ) {
             if (!state.isLoading) Text(stringResource(R.string.enter))
             else CircularProgressIndicator()
         }
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
-            Text(stringResource(R.string.do_not_have_an_account))
+            Text(
+                stringResource(R.string.do_not_have_an_account),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Text(
                 text = stringResource(R.string.registration),
-                color = Color.Blue,
-                modifier = Modifier.clickable {
-                    onIntent(AuthIntent.SwitchScreen(AuthScreens.REGISTRATION))
-                }
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clickable {
+                        onIntent(AuthIntent.SwitchScreen(AuthScreens.REGISTRATION))
+                    }
                     .padding(start = 4.dp),
             )
         }

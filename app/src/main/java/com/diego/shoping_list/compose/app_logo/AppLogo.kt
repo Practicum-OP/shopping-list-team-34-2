@@ -17,14 +17,13 @@ fun AppLogo(): ImageVector = remember(Unit) {
         viewportWidth = 1024f,
         viewportHeight = 1024f
     ).apply {
-        // это фон логотипа
-//        path(fill = SolidColor(Color(0xFFFFDCBB))) {
-//            moveTo(0f, 0f)
-//            horizontalLineToRelative(1024f)
-//            verticalLineToRelative(1024f)
-//            horizontalLineToRelative(-1024f)
-//            close()
-//        }
+        path(fill = SolidColor(Color(0xFFFFDCBB))) {
+            moveTo(0f, 0f)
+            horizontalLineToRelative(1024f)
+            verticalLineToRelative(1024f)
+            horizontalLineToRelative(-1024f)
+            close()
+        }
         path(fill = SolidColor(Color(0xFF2B1700))) {
             moveTo(271.8f, 286.3f)
             lineTo(225.7f, 286.4f)

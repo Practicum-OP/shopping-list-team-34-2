@@ -14,12 +14,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -43,7 +43,7 @@ fun RegistrationScreen(
             .padding(horizontal = 16.dp)
             .padding(vertical = 120.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White.copy(alpha = 0.6f)),
+            .background(MaterialTheme.colorScheme.surfaceContainerLow),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -78,7 +78,7 @@ fun RegistrationScreen(
                 Text(stringResource(R.string.registration))
             } else {
                 CircularProgressIndicator(
-                    color = Color(0xFFA370EE),
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp),
                     strokeWidth = 2.dp,
                 )
@@ -87,10 +87,13 @@ fun RegistrationScreen(
 
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
-            Text(stringResource(R.string.already_have_account))
+            Text(
+                stringResource(R.string.already_have_account),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Text(
                 text = stringResource(R.string.enter),
-                color = Color.Blue,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .clickable {
                         onIntent(AuthIntent.SwitchScreen(AuthScreens.LOGIN))
