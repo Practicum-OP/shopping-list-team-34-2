@@ -1,3 +1,4 @@
+
 package com.diego.shoping_list.presentation.auth
 
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,13 +10,13 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -23,9 +24,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-
-private val AccentColor = Color(0xFFA370EE)
-private val MutedBorderColor = Color.LightGray
 
 @Composable
 fun PasswordEditor(
@@ -38,7 +36,9 @@ fun PasswordEditor(
 
     SinglePasswordField(
         value = state.password,
-        onValueChange = { onIntent(AuthIntent.PasswordChanged(it)) },
+        onValueChange = {
+            onIntent(AuthIntent.PasswordChanged(it))
+        },
         label = "Password",
         imeAction = if (singlePasswordMode) ImeAction.Done else ImeAction.Next,
         onDone = {
@@ -48,9 +48,15 @@ fun PasswordEditor(
             }
         },
         isVisible = state.isPasswordVisible,
-        onToggleVisibility = { onIntent(AuthIntent.TogglePasswordVisibility) },
+        onToggleVisibility = {
+            onIntent(AuthIntent.TogglePasswordVisibility)
+        },
         isError = state.passwordError != null && singlePasswordMode,
-        supportingText = if (singlePasswordMode) state.passwordError else null,
+        supportingText = if (singlePasswordMode) {
+            state.passwordError
+        } else {
+            null
+        },
         onFocusChanged = { isFocused ->
             onIntent(AuthIntent.PasswordFocusChanged(isFocused))
         },
@@ -59,7 +65,9 @@ fun PasswordEditor(
     if (!singlePasswordMode) {
         SinglePasswordField(
             value = state.confirmPassword,
-            onValueChange = { onIntent(AuthIntent.ConfirmPasswordChanged(it)) },
+            onValueChange = {
+                onIntent(AuthIntent.ConfirmPasswordChanged(it))
+            },
             label = "Repeat password",
             imeAction = ImeAction.Done,
             onDone = {
@@ -67,7 +75,9 @@ fun PasswordEditor(
                 focusManager.clearFocus()
             },
             isVisible = state.isPasswordVisible,
-            onToggleVisibility = { onIntent(AuthIntent.TogglePasswordVisibility) },
+            onToggleVisibility = {
+                onIntent(AuthIntent.TogglePasswordVisibility)
+            },
             isError = state.passwordError != null,
             supportingText = state.passwordError,
             onFocusChanged = { isFocused ->
@@ -90,10 +100,14 @@ private fun SinglePasswordField(
     supportingText: String? = null,
     onFocusChanged: (Boolean) -> Unit = {},
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
+        label = {
+            Text(label)
+        },
         singleLine = true,
         visualTransformation = if (isVisible) {
             VisualTransformation.None
@@ -104,15 +118,29 @@ private fun SinglePasswordField(
             keyboardType = KeyboardType.Password,
             imeAction = imeAction,
         ),
-        keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                onDone?.invoke()
+            },
+        ),
         isError = isError,
-        supportingText = supportingText?.let { { Text(it) } },
+        supportingText = supportingText?.let {
+            { Text(it) }
+        },
         trailingIcon = {
             IconButton(onClick = onToggleVisibility) {
                 Icon(
-                    imageVector = if (isVisible) Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff,
-                    contentDescription = if (isVisible) "Скрыть пароль" else "Показать пароль",
+                    imageVector = if (isVisible) {
+                        Icons.Filled.Visibility
+                    } else {
+                        Icons.Filled.VisibilityOff
+                    },
+                    contentDescription = if (isVisible) {
+                        "Скрыть пароль"
+                    } else {
+                        "Показать пароль"
+                    },
+                    tint = colorScheme.onSurfaceVariant,
                 )
             }
         },
@@ -123,12 +151,12 @@ private fun SinglePasswordField(
                 onFocusChanged(focusState.isFocused)
             },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = AccentColor,
-            unfocusedBorderColor = MutedBorderColor,
-            focusedLabelColor = AccentColor,
-            cursorColor = AccentColor,
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
+            focusedBorderColor = colorScheme.primary,
+            unfocusedBorderColor = colorScheme.outline,
+            focusedLabelColor = colorScheme.primary,
+            cursorColor = colorScheme.primary,
+            focusedTextColor = colorScheme.onSurface,
+            unfocusedTextColor = colorScheme.onSurface,
         ),
     )
 }

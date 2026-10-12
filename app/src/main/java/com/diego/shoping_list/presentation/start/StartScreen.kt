@@ -28,12 +28,14 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StartScreen(
-    onFinished: () -> Unit,
+    onFinished: (StartDestination) -> Unit,
     viewModel: StartScreenViewModel = koinViewModel()
 ) {
-    val isReady by viewModel.isReady.collectAsStateWithLifecycle()
-    LaunchedEffect(isReady) {
-        if (isReady) onFinished()
+    val destination by viewModel.destination
+        .collectAsStateWithLifecycle()
+
+    LaunchedEffect(destination) {
+        destination?.let(onFinished)
     }
 
     Surface(

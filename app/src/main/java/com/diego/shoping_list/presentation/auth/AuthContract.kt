@@ -11,6 +11,8 @@ sealed interface AuthIntent {
     data object TogglePasswordVisibility : AuthIntent
     data class SwitchScreen(val screen: AuthScreens) : AuthIntent
     data object ErrorShown : AuthIntent
+
+    data class RememberMeChanged(val value: Boolean) : AuthIntent
 }
 
 data class AuthState(
@@ -23,15 +25,22 @@ data class AuthState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val generalError: String? = null,
+    val rememberMe: Boolean = false
 ) {
     val isSubmitEnabled: Boolean
         get() = when {
             isLoading -> false
             email.isBlank() -> false
-            password.isBlank() -> false
             emailError != null -> false
+
+            screen == AuthScreens.RECOVERY_PASSWORD -> true
+
+            password.isBlank() -> false
             passwordError != null -> false
-            screen == AuthScreens.REGISTRATION -> confirmPassword == password
+
+            screen == AuthScreens.REGISTRATION ->
+                confirmPassword == password
+
             else -> true
         }
 }
@@ -39,4 +48,5 @@ data class AuthState(
 sealed interface AuthEffect {
     data class ShowSnackbar(val message: String) : AuthEffect
     data object NavigateToMain : AuthEffect
+    data object NavigateToAuth : AuthEffect
 }

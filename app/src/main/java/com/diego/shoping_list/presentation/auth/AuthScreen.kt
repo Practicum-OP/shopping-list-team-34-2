@@ -1,5 +1,6 @@
 package com.diego.shoping_list.presentation.auth
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -49,6 +50,7 @@ fun AuthScreen(
             when (effect) {
                 is AuthEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
                 is AuthEffect.NavigateToMain -> onAuthSuccess()
+                is AuthEffect.NavigateToAuth -> {}
             }
         }
     }
@@ -69,10 +71,12 @@ fun AuthScreen(
         when (state.screen) {
             AuthScreens.LOGIN -> LoginScreen(state = state, onIntent = viewModel::onIntent)
             AuthScreens.REGISTRATION -> RegistrationScreen(state = state, onIntent = viewModel::onIntent)
+            AuthScreens.RECOVERY_PASSWORD -> RecoveryPasswordScreen(state = state, onIntent = viewModel::onIntent)
         }
     }
 }
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun BackgroundWithGlows() {
     val infinite = rememberInfiniteTransition(label = "glow_transition")
@@ -98,14 +102,14 @@ fun BackgroundWithGlows() {
 
     Box(Modifier.fillMaxSize()) {
         GlowCircle(
-            color = MaterialTheme.colorScheme.inversePrimary,
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
             size = 600.dp,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .offset(x = (-100).dp + shift1.dp, y = (-150).dp + shift1.dp),
         )
         GlowCircle(
-            color = Color.Cyan,
+            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.30f),
             size = 600.dp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -133,11 +137,12 @@ fun StaticHeader(nameScreen: String, userInstructions: String) {
         modifier = Modifier.padding(top = 12.dp),
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     Text(
         text = userInstructions,
         modifier = Modifier.padding(top = 12.dp),
-        color = Color.DarkGray,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 12.sp,
         fontWeight = FontWeight.Medium,
     )

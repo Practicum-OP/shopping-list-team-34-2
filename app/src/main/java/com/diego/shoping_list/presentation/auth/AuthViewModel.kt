@@ -35,14 +35,60 @@ class AuthViewModel(
         val current = _state.value
         if (!current.isSubmitEnabled) return
 
-        _state.update { it.reduce(AuthIntent.Submit) }
+        _state.update {
+            it.copy(isLoading = true, generalError = null)
+        }
 
         viewModelScope.launch {
-            val result = when (current.screen) {
-                AuthScreens.LOGIN -> interactor.login(current.email, current.password)
-                AuthScreens.REGISTRATION -> interactor.register(current.email, current.password)
+            when (current.screen) {
+                AuthScreens.LOGIN -> {
+                    val result = interactor.login(
+                        current.email,
+                        current.password,
+                        current.rememberMe
+                    )
+                    handleResult(result, AuthScreens.LOGIN)
+                }
+
+                AuthScreens.REGISTRATION -> {
+                    val result = interactor.register(
+                        current.email,
+                        current.password
+                    )
+                    handleResult(result, AuthScreens.REGISTRATION)
+                }
+
+                AuthScreens.RECOVERY_PASSWORD -> {
+                    val result = interactor.recoveryPassword(current.email)
+                    handleRecoveryResult(result, current.email)
+                }
             }
-            handleResult(result, current.screen)
+        }
+    }
+
+    private suspend fun handleRecoveryResult(
+        result: DomainResult<Unit>,
+        email: String
+    ) {
+        when (result) {
+            is DomainResult.Success -> {
+                _state.update {
+                    AuthState(
+                        screen = AuthScreens.LOGIN,
+                        email = email
+                    )
+                }
+
+                _effects.send(
+                    AuthEffect.ShowSnackbar(
+                        "Если аккаунт существует, инструкции по восстановлению отправлены на почту."
+                    )
+                )
+            }
+
+            is DomainResult.Failure -> {
+                fail(result.error.toMessage())
+            }
         }
     }
 
@@ -53,24 +99,15 @@ class AuthViewModel(
         when (result) {
             is DomainResult.Success -> {
                 if (screen == AuthScreens.LOGIN) {
-                    _state.update {
-                        it.copy(isLoading = false, generalError = null)
-                    }
+                    _state.update { it.copy(isLoading = false, generalError = null) }
                     _effects.send(AuthEffect.NavigateToMain)
                 } else {
-
                     _state.update {
-                        AuthState(
-                            screen = AuthScreens.LOGIN,
-                            email = it.email,
-                        )
+                        AuthState(screen = AuthScreens.LOGIN, email = it.email)
                     }
-                    _effects.send(
-                        AuthEffect.ShowSnackbar("Аккаунт зарегистрирован! Войдите.")
-                    )
+                    _effects.send(AuthEffect.ShowSnackbar("Аккаунт зарегистрирован! Войдите."))
                 }
             }
-
             is DomainResult.Failure -> fail(result.error.toMessage())
         }
     }
@@ -89,4 +126,4 @@ class AuthViewModel(
     }
 }
 
-enum class AuthScreens { REGISTRATION, LOGIN }
+enum class AuthScreens { REGISTRATION, LOGIN, RECOVERY_PASSWORD }
