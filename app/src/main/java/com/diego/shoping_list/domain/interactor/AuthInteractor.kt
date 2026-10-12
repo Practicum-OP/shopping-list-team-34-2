@@ -78,7 +78,7 @@ class AuthInteractor(
         }
     }
 
-    suspend fun recover(email: String): DomainResult<Unit> {
+    suspend fun recoveryPassword(email: String): DomainResult<Unit> {
         return authRepository.recover(email.trim())
     }
 

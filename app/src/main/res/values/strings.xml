@@ -62,4 +62,16 @@
     <string name="toast_product_saved">Сохранено</string>
     <string name="toast_product_deleted">Удалено</string>
     <string name="account_logout">Выход</string>
+    <string name="enter">Вход</string>
+    <string name="enter_your_email_and_password_for_login">Введите ваш email и пароль для входа</string>
+    <string name="remember_me">Запомнить меня</string>
+    <string name="forgot_your_password">Забыли пароль?</string>
+    <string name="do_not_have_an_account">"Нет аккаунта? "</string>
+    <string name="registration">Регистрация</string>
+    <string name="recovery_password">Восстановление пароля</string>
+    <string name="enter_email_used_during_registration">Введите email, указанный при регистрации</string>
+    <string name="already_have_account">Уже есть аккаунт?</string>
+    <string name="creatr_your_account">Создайте ваш аккаунт</string>
+    <string name="reset_password">Восстановить пароль</string>
+    <string name="return_to_the_entrance">Вернуться ко входу</string>
 </resources>

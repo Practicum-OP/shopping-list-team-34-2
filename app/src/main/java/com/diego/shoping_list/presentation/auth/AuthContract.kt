@@ -31,10 +31,16 @@ data class AuthState(
         get() = when {
             isLoading -> false
             email.isBlank() -> false
-            password.isBlank() -> false
             emailError != null -> false
+
+            screen == AuthScreens.RECOVERY_PASSWORD -> true
+
+            password.isBlank() -> false
             passwordError != null -> false
-            screen == AuthScreens.REGISTRATION -> confirmPassword == password
+
+            screen == AuthScreens.REGISTRATION ->
+                confirmPassword == password
+
             else -> true
         }
 }

@@ -21,14 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.diego.shoping_list.R
 
 @Composable
 fun LoginScreen(
     state: AuthState,
     onIntent: (AuthIntent) -> Unit,
-    nameScreen: String = "Вход",
-    userInstructions: String = "Введите ваш email и пароль для входа",
+    nameScreen: String = stringResource(R.string.enter),
+    userInstructions: String = stringResource(R.string.enter_your_email_and_password_for_login),
 ) {
 
     Column(
@@ -68,14 +70,16 @@ fun LoginScreen(
                         onIntent(AuthIntent.RememberMeChanged(it))
                     },
                 )
-                Text("Запомнить меня")
+                Text(stringResource(R.string.remember_me))
             }
 
             Text(
-                text = "Забыли пароль?",
+                text = stringResource(R.string.forgot_your_password),
                 color = Color.Blue,
                 modifier = Modifier
-                    .clickable { /*пока ничего*/ }
+                    .clickable {
+                        onIntent(AuthIntent.SwitchScreen(AuthScreens.RECOVERY_PASSWORD))
+                    }
                     .padding(4.dp),
             )
         }
@@ -84,18 +88,19 @@ fun LoginScreen(
             onClick = { onIntent(AuthIntent.Submit) },
             enabled = state.isSubmitEnabled
         ) {
-            if (!state.isLoading) Text("Вход")
+            if (!state.isLoading) Text(stringResource(R.string.enter))
             else CircularProgressIndicator()
         }
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
-            Text("Нет аккаунта? ")
+            Text(stringResource(R.string.do_not_have_an_account))
             Text(
-                text = "Регистрация",
+                text = stringResource(R.string.registration),
                 color = Color.Blue,
                 modifier = Modifier.clickable {
                     onIntent(AuthIntent.SwitchScreen(AuthScreens.REGISTRATION))
-                },
+                }
+                    .padding(start = 4.dp),
             )
         }
     }

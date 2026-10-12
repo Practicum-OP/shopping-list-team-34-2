@@ -1,5 +1,6 @@
 package com.diego.shoping_list.presentation.auth
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -70,10 +71,12 @@ fun AuthScreen(
         when (state.screen) {
             AuthScreens.LOGIN -> LoginScreen(state = state, onIntent = viewModel::onIntent)
             AuthScreens.REGISTRATION -> RegistrationScreen(state = state, onIntent = viewModel::onIntent)
+            AuthScreens.RECOVERY_PASSWORD -> RecoveryPasswordScreen(state = state, onIntent = viewModel::onIntent)
         }
     }
 }
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun BackgroundWithGlows() {
     val infinite = rememberInfiniteTransition(label = "glow_transition")

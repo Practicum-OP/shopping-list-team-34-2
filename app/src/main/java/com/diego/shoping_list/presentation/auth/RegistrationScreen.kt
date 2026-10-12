@@ -22,14 +22,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.diego.shoping_list.R
 
 @Composable
 fun RegistrationScreen(
     state: AuthState,
     onIntent: (AuthIntent) -> Unit,
-    nameScreen: String = "Регистрация",
-    userInstructions: String = "Создайте ваш аккаунт",
+    nameScreen: String = stringResource(R.string.registration),
+    userInstructions: String = stringResource(R.string.creatr_your_account),
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -73,7 +75,7 @@ fun RegistrationScreen(
                 .padding(top = 16.dp),
         ) {
             if (!state.isLoading) {
-                Text("Зарегистрироваться")
+                Text(stringResource(R.string.registration))
             } else {
                 CircularProgressIndicator(
                     color = Color(0xFFA370EE),
@@ -85,13 +87,15 @@ fun RegistrationScreen(
 
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
-            Text("Уже есть аккаунт? ")
+            Text(stringResource(R.string.already_have_account))
             Text(
-                text = "Войти",
+                text = stringResource(R.string.enter),
                 color = Color.Blue,
-                modifier = Modifier.clickable {
-                    onIntent(AuthIntent.SwitchScreen(AuthScreens.LOGIN))
-                },
+                modifier = Modifier
+                    .clickable {
+                        onIntent(AuthIntent.SwitchScreen(AuthScreens.LOGIN))
+                    }
+                    .padding(start = 4.dp),
             )
         }
     }
