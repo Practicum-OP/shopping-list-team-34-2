@@ -1,0 +1,105 @@
+package com.diego.shoping_list.presentation.auth
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.diego.shoping_list.R
+
+@Composable
+fun RegistrationScreen(
+    state: AuthState,
+    onIntent: (AuthIntent) -> Unit,
+    nameScreen: String = stringResource(R.string.registration),
+    userInstructions: String = stringResource(R.string.creatr_your_account),
+) {
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 120.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        StaticHeader(nameScreen, userInstructions)
+
+        EmailEditor(
+            state = state,
+            onIntent = onIntent,
+            focusManager = focusManager,
+        )
+
+        PasswordEditor(
+            state = state,
+            onIntent = onIntent,
+            singlePasswordMode = false
+        )
+
+        Button(
+            onClick = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+                onIntent(AuthIntent.Submit)
+            },
+            enabled = state.isSubmitEnabled,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp),
+        ) {
+            if (!state.isLoading) {
+                Text(stringResource(R.string.registration))
+            } else {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
+        }
+
+
+        Row(modifier = Modifier.padding(top = 16.dp)) {
+            Text(
+                stringResource(R.string.already_have_account),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.enter),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clickable {
+                        onIntent(AuthIntent.SwitchScreen(AuthScreens.LOGIN))
+                    }
+                    .padding(start = 4.dp),
+            )
+        }
+    }
+}

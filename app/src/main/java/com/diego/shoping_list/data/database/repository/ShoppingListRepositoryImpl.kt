@@ -1,0 +1,95 @@
+package com.diego.shoping_list.data.database.repository
+
+import com.diego.shoping_list.data.database.dao.ProductInListDao
+import com.diego.shoping_list.data.database.dao.ShoppingListDao
+import com.diego.shoping_list.data.database.entities.ShoppingListEntity
+import com.diego.shoping_list.data.settings.SortModeRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+
+class ShoppingListRepositoryImpl(
+    private val dao: ShoppingListDao,
+    private val productInListDao: ProductInListDao,
+    private val sortModeRepository: SortModeRepository
+) : ShoppingListRepository {
+    override fun searchByName(query: String): Flow<List<ShoppingListEntity>> {
+        return if (query.isBlank()){
+            dao.observeAll()
+        } else {
+            dao.searchByName(query)
+        }
+    }
+
+    override suspend fun addList(name: String, iconKey: String): Result<Long> {
+        val trimmed = name.trim()
+        val lower = trimmed.lowercase()
+
+        if (trimmed.isEmpty()) {
+            return Result.failure(IllegalArgumentException("Название не может быть пустым"))
+        }
+
+        if (dao.existsByName(lower)) {
+            return Result.failure(IllegalStateException("Список с таким именем уже есть"))
+        }
+
+        return try {
+            val id = dao.insert(
+                ShoppingListEntity(nameList = lower, iconKey = iconKey)
+            )
+            Result.success(id)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateList(list: ShoppingListEntity): Result<Unit> {
+        return try {
+            dao.update(list)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun copyList(id: Long): Result<Long> {
+        return try {
+            val sortMode = sortModeRepository.sortMode(id).first()
+            val copyId = dao.copyList(id)
+            sortModeRepository.save(copyId, sortMode)
+            Result.success(copyId)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateListIcon(id: Long, iconKey: String): Result<Unit> {
+        return try {
+            dao.updateIcon(id, iconKey)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteList(list: ShoppingListEntity): Result<Unit> {
+        return try {
+            dao.delete(list)
+            productInListDao.deleteByList(list.id)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteAllLists(): Result<Unit> {
+        return try {
+            dao.deleteAll()
+            productInListDao.deleteAll()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
