@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.detekt)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -37,7 +39,58 @@ android {
     }
 }
 
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+    parallel = true
+    ignoreFailures = false
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(false)
+        sarif.required.set(false)
+        md.required.set(false)
+    }
+}
+
 dependencies {
+    // DataStore для хранения данных
+    implementation("androidx.datastore:datastore-preferences:1.3.0-alpha11")
+
+    // Официальный модуль шифрования DataStore через Tink
+    implementation("androidx.datastore:datastore-tink:1.3.0-alpha11")
+
+    // библиотека Tink
+    implementation("com.google.crypto.tink:tink-android:1.23.0")
+
+// retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+// Шифрованное хранилище токенов
+    implementation("androidx.security:security-crypto:1.1.0")
+
+// view model
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.material3)
+
+//    database
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+//    di
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -53,4 +106,11 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.navigation.compose)
+
+// Сортировка через drag and drop от Calvin-LL/Reoderable
+    implementation(libs.reorderable)
+
+//  DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }

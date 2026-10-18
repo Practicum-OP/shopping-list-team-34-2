@@ -1,0 +1,67 @@
+package com.diego.shoping_list.presentation.shoppingList.view_model
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.diego.shoping_list.domain.ListIcon
+import com.diego.shoping_list.domain.ShoppingList
+import com.diego.shoping_list.domain.interactor.ShoppingListInteractor
+import com.diego.shoping_list.presentation.shoppingList.state.UiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+class ShoppingListViewModel(
+    private val interactor: ShoppingListInteractor
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow<UiState>(UiState.Empty)
+    val uiState = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            interactor.getLists().collect { lists ->
+                _uiState.value = if (lists.isEmpty()) {
+                    UiState.Empty
+                } else {
+                    UiState.Content(lists)
+                }
+            }
+        }
+    }
+
+    fun insertList(name: String) {
+        viewModelScope.launch {
+            interactor.addList(name)
+        }
+    }
+
+    fun changeListIcon(listId: Long, icon: ListIcon) {
+        viewModelScope.launch {
+            interactor.changeListIcon(listId, icon)
+        }
+    }
+
+    fun copyList(list: ShoppingList) {
+        viewModelScope.launch {
+            interactor.copyList(list)
+        }
+    }
+
+    fun renameList(list: ShoppingList, name: String) {
+        viewModelScope.launch {
+            interactor.renameList(list, name)
+        }
+    }
+
+    fun deleteList(list: ShoppingList) {
+        viewModelScope.launch {
+            interactor.deleteList(list)
+        }
+    }
+
+    fun deleteAllLists() {
+        viewModelScope.launch {
+            interactor.deleteAllLists()
+        }
+    }
+}
